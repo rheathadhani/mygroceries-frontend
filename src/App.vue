@@ -14,7 +14,7 @@
     },
     computed:{
       showNavBar(){
-        const hiddenRoutes = ['/welcome'];
+        const hiddenRoutes = ['/welcome', '/admin'];
         //add register 
 
         //show NavBar for all pages accept for hiddenRoutes

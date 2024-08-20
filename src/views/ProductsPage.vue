@@ -1,66 +1,57 @@
 <template>
-    <div id="page-wrap">
-      <ProductsGrid :products = "products" />
-
+  <div id="page-wrap-container" class="container-fluid">
+    <div class="row">
+      <!-- Categories List -->
+      <div class="col-md-3 bg-light p-3">
+        <CategoriesList @categorySelected="filterProductsByCategory" />
+      </div>
+      <!-- Products Grid -->
+      <div id="product-wrap" class="col-md-9 p-3 bg-light">
+        <ProductsGrid :products="filteredProducts" />
+      </div>
     </div>
-  </template>
-
+  </div>
+</template>
 
 <script>
 import { products } from "../fake-data";
-import ProductsGrid from "../components/ProductsGrid.vue"
+import ProductsGrid from "../components/ProductsGrid.vue";
+import CategoriesList from '../components/CategoriesList.vue';
 
-    export default {
-        name: "ProductsPage",
-        components: {
-          ProductsGrid
-        },
-        data(){
-            return {
-                products
-            }
-        }
+export default {
+  name: "ProductsPage",
+  components: {
+    ProductsGrid,
+    CategoriesList
+  },
+  data() {
+    return {
+      products,
+      filteredProducts: products, // Start with all products displayed
     }
+  },
+  methods: {
+    filterProductsByCategory(categoryId) {
+      this.filteredProducts = this.products.filter(product => product.categoryId === categoryId);
+      console.log(`Category ID: ${categoryId}`);
+      console.log('Filtered Products:', this.filteredProducts);
+    }
+  }
+}
 </script>
 
-
 <style scoped>
-    #page-wrap{
-        margin: auto;
-        max-width: 800px;
-        min-height: 100vh;
-    }
+#product-wrap {
+  min-height: 100vh;
+  padding-left: 10px; /* Ensure even padding on both sides */
+}
 
+#page-wrap-container {
+  height: 100vh;
+  padding-right: 20px; /* Ensure even padding on both sides */
+}
 
-  .grid-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    margin-top: 16px;
-  }
-
-
-  /* Responsive Styles */
-  @media screen and (min-width: 768px) {
-    .product-item {
-      width: 30%; /* Adjust the width for larger laptops */
-    }
-  }
-
-  @media screen and (max-width: 768px) {
-    img {
-        height: 200px;
-        width: 200px;
-        margin: 0;
-    }
-    #grid-wrap {
-        align-items: center;
-        justify-content: center;
-    }
-    .product-item {
-      width: 90%; /* Make each product item take up the full width on smaller screens */
-    }
-  }
+.bg-light {
+  background-color: #f8f9fa !important;
+}
 </style>
-
- 

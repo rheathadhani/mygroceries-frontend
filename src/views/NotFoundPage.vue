@@ -3,15 +3,13 @@
 </template>
 
 <script>
-    export default {
-        name: "NotFoundPage",
-    };
+export default {
+    name: "NotFoundPage",
+};
 </script>
 
 <style scoped>
-
-h1{
+h1 {
     text-align: center;
 }
-
 </style>

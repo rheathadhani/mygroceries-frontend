@@ -1,19 +1,23 @@
 <template>
-  <div class="form-border">
-    <h2>Sign In</h2>
-    <form @submit.prevent="login">
-      <div class="input-group">
-        <input type="email" placeholder="Enter your email address" required>
-      </div>
-      <div class="input-group">
-        <input type="password" placeholder="Enter password" required>
-      </div>
-      <button class="btn">LOGIN</button>
-    </form>
+  <div class="container">
+    <div class="card text-dark p-4 shadow-sm w-75">
+      <h2 class="mb-4 text-center"> Login to your account </h2>
+      <form @submit.prevent="login">
+        <div class="mb-3">
+          <input type="email" class="form-control" placeholder="Enter your email address" required>
+        </div>
+        <div class="mb-3">
+          <input type="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <a href="#" @click.prevent="emitForgotPassword" id="forgot-password" class="text-dark">Forgot Password?</a>
+        </div>
+        <button class="btn btn-dark w-100">Login</button>
+      </form>
 
-    <div class="extra-links">
-      <a href="#" @click.prevent="emitForgotPassword">Forgot password?</a>
-      <a href="#" @click.prevent="emitRegistrationForm">Register</a>
+      <div class="text-center mt-4">
+        <a href="#" @click.prevent="emitRegistrationForm" class="text-dark">New to MyGrocer? Register Now</a>
+      </div>
     </div>
   </div>
 </template>
@@ -35,92 +39,58 @@ export default {
 };
 </script>
 
-
 <style scoped>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
+/* Specific styling to complement Bootstrap classes */
+.container {
+  display: flex;           /* Enables flexbox */
+  justify-content: center; /* Centers content horizontally */
+  align-items: center;     /* Centers content vertically */
+  height: 100vh;           /* Full height of the viewport */
 }
 
-#page-wrap-container {
-  display: flex;
-  height: 97vh; /* Full viewport height */
-  width: 98vw; /* Full viewport width */
-  margin: 0;
+.card {
+  border-radius: 2.5vh;
+  width: 50%;              /* Adjust width as needed */
 }
 
-.half-page {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.right {
-  background-color: #fff;
-  color: #000;
-  text-align: center;
-  width: 60%;
-}
-
-.form-border {
-  border: 1px solid #000;
-  padding: 10vh 5vh;
-  border-radius: 2vh;
-}
-
-h1, h2, p {
-  margin-bottom: 20px;
-}
-
-#intro-text {
-  margin-bottom: 20px;
-  font-size: 3vh;
+.form-control {
+  border-radius: 0.5rem;
 }
 
 .btn {
-  background-color: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  padding: 10px 20px;
-  cursor: pointer;
   text-transform: uppercase;
-  transition: background-color 0.3s, color 0.3s;
 }
 
 .btn:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: #000;
+  color: #fff;
 }
+@media (max-width: 600px) {
+  #text-wrap {
+    display: none; /* Hide the welcome text on small screens */
+  }
 
-.input-group {
-  margin-bottom: 20px;
-  width: 30vw;
-}
+  #page-wrap-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; /* Full viewport height to aid in centering */
+    width: 100vw; /* Full viewport width */
+  }
 
-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
+  .half-page {
+    width: 100%; /* Adjust this to change the width of the login form container */
+    max-width: 300px; /* Optionally set a max width for the form */
+  }
 
-.extra-links {
-  margin-top: 5vh;
-}
-
-.extra-links a {
-  color: #000;
-  text-decoration: none;
-  margin: 0 10px;
-}
-
-.extra-links a:hover {
-  text-decoration: underline;
+  .half-page.right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Ensure the form itself is centered within the 'right' container */
+    align-items: center;
+    height: auto; /* Allow the container to shrink to fit its contents */
+  }
 }
 </style>
-
-
-]

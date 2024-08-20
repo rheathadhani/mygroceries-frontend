@@ -1,16 +1,21 @@
 <template>
-  <div id="page-wrap-container">
-    <div id="text-wrap" class="half-page left">
+  <div id="page-wrap-container" class="vh-100 vw-100 d-flex m-0 overflow-hidden">
+    <div class="half-page d-flex flex-column justify-content-center align-items-center p-3 bg-dark text-white text-center col-md-5">
       <h1>Welcome to MyGroceries</h1>
-      <p id = "intro-text">Grocery shopping made easier and accessible</p>
-      <!--Ask Supervisor-->
-      <button class="btn">Accessibility</button>
-      <div class="half-page right">
-        <component :is="currentComponent" @showForgotPassword="showForgotPassword" @showRegistrationForm="showRegistrationForm" />
-      </div>
+      <p id="intro-text">Grocery shopping made easier and accessible</p>
+      <button class="btn btn-outline-light">Accessibility</button>
+    </div>
+    <div class="half-page d-flex flex-column justify-content-center align-items-center p-3 bg-white text-dark text-center col-md-7">
+      <component 
+        :is="currentComponent" 
+        @showForgotPassword="showForgotPassword"
+        @showRegistrationForm="showRegistrationForm"
+        @showLoginForm="showLoginForm"
+      />
     </div>
   </div>
 </template>
+
 
 <script>
 import LoginForm from '../components/LoginForm.vue';
@@ -26,7 +31,7 @@ export default {
   },
   data() {
     return {
-      currentComponent: 'LoginForm' // Default component
+      currentComponent: 'LoginForm'
     };
   },
   methods: {
@@ -35,43 +40,18 @@ export default {
     },
     showRegistrationForm() {
       this.currentComponent = 'RegistrationForm';
+    },
+    showLoginForm() {
+      this.currentComponent = 'LoginForm';
     }
   }
 };
 </script>
 
 <style scoped>
-*{
-  box-sizing: border-box;
-}
-html, body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden; /* Prevent scrolling */
-}
-
-#page-wrap-container {
-  display: flex;
-  height: 97vh; /* Full viewport height */
-  width: 98vw; /* Full viewport width */
-  margin: 0;
-}
-
+/* Additional styles to complement Bootstrap */
 .half-page {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  box-sizing: border-box; /* Include padding in width/height calculations */
-}
-
-.left {
-  background-color: #000;
-  color: #fff;
-  text-align: center;
-  width: 40%; /* Occupies 50% of the width */
-  height: 100%; /* Full height of the container */
+  box-sizing: border-box; /* Keeps the padding inside the element dimensions */
 }
 
 h1, h2, p {
@@ -79,52 +59,30 @@ h1, h2, p {
 }
 
 #intro-text {
-  margin-bottom: 20px;
-  font-size: 3vh;
-}
-
-.btn {
-  background-color: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  padding: 10px 20px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: background-color 0.3s, color 0.3s;
+  font-size: 1.25rem; /* Bootstrap doesn't use vh for font-sizing by default */
 }
 
 .btn:hover {
-  background-color: #fff;
-  color: #000;
+  background-color: #fff !important; /* Override Bootstrap's hover effect */
+  color: #000 !important;
+}
+@media (max-width: 600px) { /* Adjust this breakpoint as needed */
+  #text-wrap {
+    display: none; /* Hide the welcome text on small screens */
+  }
+
+  #page-wrap-container {
+    justify-content: center; /* Center the login form */
+  }
+
+  .half-page {
+    width: 100%; /* Make the login form take full width */
+  }
 }
 
-.input-group {
-  margin-bottom: 20px;
-  width: 30vw;
+@media (max-width: 600px) {
+  #page-wrap-container {
+    flex-direction: column; /* Stack the items vertically */
+  }
 }
-
-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.extra-links {
-  margin-top: 5vh;
-}
-
-.extra-links a {
-  color: #000;
-  text-decoration: none;
-  margin: 0 10px;
-}
-
-.extra-links a:hover {
-  text-decoration: underline;
-}
-
-
 </style>
-
-]
