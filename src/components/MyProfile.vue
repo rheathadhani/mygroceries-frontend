@@ -1,7 +1,6 @@
 <template>
-  <h3> Edit Profile </h3>
   <div class="container mt-4">
-    <div class="profile-container bg-white p-4 shadow-sm">
+    <div class="profile-container p-4 shadow-sm">
       <form class="profile-form" method="post">
 
         <div class="form-group row mb-3">
@@ -86,21 +85,18 @@ export default {
 
 <style scoped>
 .profile-container {
-  width: 100%; /* Make the container take full width of the parent */
-  max-width: 70vw; /* Limit the maximum width to 80% of the viewport */
-  height: 70vh; /* Reduced height for the container */
-  margin: 20px auto; /* Center the container horizontally */
+  width: 100%;
+  max-width: 70vw;
+  height: 70vh;
+  margin: 20px auto;
   padding: 20px;
   background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow-x: hidden; /* Prevent horizontal overflow */
+  overflow-x: hidden;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 12px 40px 0 rgba(0, 0, 0, 0.2); /* Increased shadow for debugging */
 }
 
 h3 {
-  font-size: 28px;
-  font-weight: bold;
-  text-align: center; /* Center-align the "Edit Profile" heading */
+  text-align: center;
 }
 
 button {
@@ -114,5 +110,3 @@ button:hover {
   color: #000;
 }
 </style>
-
-

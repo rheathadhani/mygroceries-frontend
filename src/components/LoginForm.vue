@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
+  <div class="container bg-light">
     <div class="card text-dark p-4 shadow-sm w-75">
-      <h2 class="mb-4 text-center"> Login to your account </h2>
+      <h3 class="mb-4 text-center"> Login to your account </h3>
       <form @submit.prevent="login">
         <div class="mb-3">
           <input type="email" class="form-control" placeholder="Enter your email address" required>
@@ -9,7 +9,8 @@
         <div class="mb-3">
           <input type="password" class="form-control" placeholder="Enter your password" required>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-end mb-3">
+          <!-- Right-align the forgot password link -->
           <a href="#" @click.prevent="emitForgotPassword" id="forgot-password" class="text-dark">Forgot Password?</a>
         </div>
         <button class="btn btn-dark w-100">Login</button>
@@ -57,14 +58,9 @@ export default {
   border-radius: 0.5rem;
 }
 
-.btn {
-  text-transform: uppercase;
-}
 
-.btn:hover {
-  background-color: #000;
-  color: #fff;
-}
+
+
 @media (max-width: 600px) {
   #text-wrap {
     display: none; /* Hide the welcome text on small screens */

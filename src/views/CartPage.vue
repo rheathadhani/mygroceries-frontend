@@ -1,17 +1,26 @@
 <template>
-  <div id="page-wrap">
-    <h1>Shopping Cart</h1>
-    <ProductsList :products="cartItems"></ProductsList>
-    <h3 id="total-price">Total: ${{ totalPrice }}</h3>
-    <router-link to="/checkout" id="checkout-link">
-      <button button id="checkout-button">Proceed to checkout</button>
-    </router-link>
+  <div id="page-wrap" class="container mt-2 bg-light p-4 rounded">
+    <h3 class="pt-1 pb-0 text-center">Shopping Cart</h3>
+    <div class="card shadow-sm">
+      <!-- Card Body for Product List and Total -->
+      <div class="card-body pt-2 ">
+        <ProductsList :products="cartItems" @updateQuantity="updateQuantity" @removeProduct="removeFromCart"></ProductsList>
+
+        <!-- Total Price -->
+        <h3 id="total-price" class="text-end mt-4">Total: ${{ totalPrice }}</h3>
+        
+        <!-- Checkout Button -->
+        <router-link to="/checkout" id="checkout-link">
+          <button id="checkout-button" class="btn btn-dark w-100 mt-3">Proceed to Checkout</button>
+        </router-link>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { cartItems } from '../fake-data';
-import ProductsList from "../components/ProductsList.vue"
+import ProductsList from "../components/ProductsList.vue";
 
 export default {
   name: 'CartPage',
@@ -20,46 +29,44 @@ export default {
   },
   data() {
     return {
-      cartItems,
+      cartItems: cartItems.map(item => ({ ...item, quantity: 1 })), // Initialize with quantity
     }
   },
   computed: {
     totalPrice() {
       return this.cartItems.reduce(
-        (sum, item) => sum + Number(item.price),
+        (sum, item) => sum + Number(item.price) * item.quantity,
         0,
       );
+    }
+  },
+  methods: {
+    updateQuantity(productId, newQuantity) {
+      const product = this.cartItems.find(item => item.id === productId);
+      if (product) {
+        product.quantity = newQuantity;
+      }
+    },
+    removeFromCart(productId) {
+      this.cartItems = this.cartItems.filter(item => item.id !== productId);
     }
   }
 };
 </script>
 
 <style scoped>
-h1 {
-  border-bottom: 1px solid black;
-  margin: 0;
-  margin-top: 16px;
-  padding: 16px;
-}
-
 #total-price {
-  padding: 16px;
+  padding: 16px 0;
   text-align: right;
 }
 
 #checkout-button {
   width: 100%;
   transition: background-color 0.3s, color 0.3s;
-  border: 2px solid #000;
-}
-
-#checkout-button:hover {
-  background-color: #fff;
-  color: #000;
 }
 
 .product-container {
-  align-content: 'center';
+  align-content: center;
   border-bottom: 1px solid #ddd;
   display: flex;
   padding: 16px;

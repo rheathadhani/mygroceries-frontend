@@ -1,19 +1,30 @@
 <template>
-  <div class="form-border">
-    <h2>Reset Your Password</h2>
-    <form @submit.prevent="resetPassword">
-      <div class="input-group">
-        <input type="password" placeholder="Enter your old Password" required>
+  <div class="container d-flex flex-column align-items-center vh-100 bg-light">
+    <div class="card text-dark p-4 shadow-sm w-75 form-container">
+      <h3 class="mb-4 text-center">Reset Your Password</h3>
+      <div class="mb-4 text-muted small pl-2">
+        <p class="mb-1" style="text-align: left;"><strong>Passwords must be:</strong></p>
+        <ul class="pl-3 mb-0">
+          <li :class="{ 'font-weight-bold': passwordLengthValid }">Min 6 characters</li>
+          <li :class="{ 'font-weight-bold': passwordUpperCaseValid }">At least one uppercase letter</li>
+          <li :class="{ 'font-weight-bold': passwordSpecialCharValid }">At least one special character (!@#$)</li>
+        </ul>
       </div>
-      <div class="input-group">
-        <input type="password" placeholder="Enter your new password" required>
+      <form @submit.prevent="resetPassword">
+        <div class="mb-3">
+          <input type="password" v-model="oldPassword" class="form-control" placeholder="Enter your old password"
+            required>
+        </div>
+        <div class="mb-3">
+          <input type="password" v-model="password" @input="validatePassword" class="form-control"
+            placeholder="Enter your new password" required>
+        </div>
+        <button class="btn btn-dark w-100">Reset</button>
+        <p class="text-dark mt-4 text-center">Password Changed!</p>
+      </form>
+      <div class="text-center mt-4">
+        <a href="#" @click.prevent="emitLoginForm" class="text-dark">Back to Login</a>
       </div>
-      <button class="btn">Reset</button>
-      <p> Password Changed!</p>
-    </form>
-
-    <div class="extra-links">
-      <a href="#" @click.prevent="emitLoginForm">Back to Login </a>
     </div>
   </div>
 </template>
@@ -21,110 +32,91 @@
 <script>
 export default {
   name: 'ForgotPasswordForm',
+  data() {
+    return {
+      password: '',
+      passwordLengthValid: false,
+      passwordUpperCaseValid: false,
+      passwordSpecialCharValid: false,
+    };
+  },
   methods: {
+    validatePassword() {
+      this.passwordLengthValid = this.password.length >= 6;
+      this.passwordUpperCaseValid = /[A-Z]/.test(this.password);
+      this.passwordSpecialCharValid = /[!@#$]/.test(this.password);
+    },
     resetPassword() {
       // Your reset password logic here
     },
     emitLoginForm() {
       this.$emit('showLoginForm');
-    }
+    },
   }
 };
 </script>
 
-
 <style scoped>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
-
-#page-wrap-container {
-  display: flex;
-  height: 97vh; /* Full viewport height */
-  width: 98vw; /* Full viewport width */
-  margin: 0;
-}
-
-.half-page {
+.container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 20px;
+  height: 100vh;
+  padding-top: 20px;
+  /* Adjust this padding as needed to push down the content */
 }
 
-.right {
-  background-color: #fff;
-  color: #000;
-  text-align: center;
-  width: 60%;
-}
-
-.form-border {
-  border: 0.5px solid #797777;
-  padding: 10vh 5vh;
-  border-radius: 2.5vh;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-}
-
-h1, h2, p {
-  margin-bottom: 20px;
-}
-
-#intro-text {
-  margin-bottom: 20px;
-  font-size: 3vh;
-}
-
-.btn {
-  background-color: transparent;
-  border: 2px solid #000;
-  width: 10vw;
-  color: #000;
-  padding: 10px 20px;
-  cursor: pointer;
-  margin-top: 30px;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.btn:hover {
-  background-color: #000;
-  color: #fff;
-}
-
-.input-group {
-  margin-bottom: 20px;
-  width: 30vw;
-}
-
-input {
+.card {
+  border-radius: 1rem;
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  /* Full width for smaller screens */
+  max-width: 400px;
+  /* Max width for larger screens */
+  margin: 0 auto;
+  /* Center card */
+  padding: 20px;
+  /* Adjust padding for better spacing */
+  overflow-y: auto;
+  /* Enable vertical scroll */
 }
 
-.extra-links {
-  margin-top: 5vh;
+.form-container {
+  max-height: 80vh;
+  /* Adjust to prevent cutting off content */
 }
 
-.extra-links a {
-  color: #000;
-  text-decoration: none;
-  margin: 0 10px;
+.form-control {
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-.extra-links a:hover {
-  text-decoration: underline;
+.text-muted ul {
+  padding-left: 1rem;
+  margin-bottom: 0;
+  text-align: left;
 }
 
-#forgot-password{
-  margin-top: 2w;
-  font-size: 2vh;
-  right: 2w;
+.text-muted ul li {
+  list-style-type: square;
+  padding-left: 0.5rem;
+}
+
+.font-weight-bold {
+  font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .card {
+    width: 100%;
+    max-width: 100%;
+    padding: 15px;
+    /* Adjust padding for smaller screens */
+  }
+
+  .container {
+    justify-content: flex-start;
+    /* Align items to the top */
+  }
 }
 </style>
-
-

@@ -1,17 +1,55 @@
 <template>
-  <div id="page-wrap" v-if="product">
-    <div id="img-wrap">
-      <img :src="product.imageUrl" />
-    </div>
-    <div id="product-details" @mouseover="speakProductDetails">
-      <h1>{{ product.name }}</h1>
-      <h3 id="price">${{ product.price }}</h3>  
-      <p>Average rating: {{ product.averageRating }}</p>
-      <button id="add-to-cart" @mouseover = "speakButton">Add to Cart</button>
-      <h4>Description</h4>
-      <p>{{ product.description }}</p>
+  <div v-if="product" class="container-fluid bg-light vh-100">
+    <!-- Container Box for Product Details -->
+    <div class="row mt-3 justify-content-center">
+      <div class="col-md-8">
+        <div class="p-3 rounded">
+          <!-- Product Name -->
+          <div class="row">
+            <div class="col-12 mb-3">
+              <h3>{{ product.name }}</h3>
+            </div>
+          </div>
+
+          <div class="row">
+            <!-- Product Image -->
+            <div class="col-md-5 text-center">
+              <img :src="product.imageUrl" class="img-fluid" />
+            </div>
+
+            <!-- Description and Add to Cart / Quantity Controls -->
+            <div class="col-md-7">
+              <h4>Description</h4>
+              <p>{{ product.description }}</p>
+
+              <div v-if="!isInCart">
+                <!-- Add to Cart Button -->
+                <button class="btn btn-dark w-100 mt-2" @click="addToCart" @mouseover="speakButton">
+                  Add to Cart
+                </button>
+              </div>
+
+              <div v-else class="quantity-controls d-flex align-items-center mt-2">
+                <!-- Quantity Controls -->
+                <button class="btn btn-dark" @click="changeQuantity(-1)" :disabled="quantity <= 1">-</button>
+                <span class="mx-3">{{ quantity }}</span>
+                <button class="btn btn-dark" @click="changeQuantity(1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nutritional Information -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <h4>Nutritional Information</h4>
+              <p>{{ product.nutritionalInfo }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
   <NotFoundPage v-else />
 </template>
 
@@ -27,80 +65,60 @@ export default {
   data() {
     return {
       product: products.find(p => p.id === this.$route.params.id),
+      isInCart: false, // Initially, the product is not in the cart
+      quantity: 1, // Default quantity is 1
     };
   },
   methods: {
-    speakProductDetails() {
-      if (!this.product) return;
-
-      const productSpeech= new SpeechSynthesisUtterance();
-      productSpeech.text = `Product Name: ${this.product.name}. 
-                        Price: ${this.product.price} dollars. 
-                        Average rating: ${this.product.averageRating}. 
-                        Description: ${this.product.description}`;
-
-      const voices = speechSynthesis.getVoices();
-      productSpeech.voice = voices.find(voice => voice.name === 'Google US English') || voices[0];
-      speechSynthesis.speak(productSpeech);
+    addToCart() {
+      this.isInCart = true; // Set the product as added to cart
+      console.log("Product added to cart");
     },
-    speakButton(){
-      if (!this.product) return;
-      const button = new SpeechSynthesisUtterance();
-      button.text = "Click to Add to cart";
-      const voices = speechSynthesis.getVoices();
-      button.voice = voices.find(voice => voice.name === 'Google US English') || voices[0];
-      speechSynthesis.speak(button);
-    }
-  }
+    changeQuantity(amount) {
+      const newQuantity = this.quantity + amount;
+      if (newQuantity >= 1) {
+        this.quantity = newQuantity;
+      }
+    },
+    speakProductDetails() {
+      console.log("test");
+    },
+    speakButton() {
+      console.log("Speak button activated");
+    },
+  },
 };
 </script>
 
 <style scoped>
-#page-wrap {
-  margin-top: 16px;
-  padding: 16px;
-  max-width: 600px;
-}
-
-#img-wrap {
-  text-align: center;
+.container-fluid {
+  padding: 0;
 }
 
 img {
-  width: 400px;
-}
-
-#product-details {
-  padding: 16px;
-  position: relative;
-}
-
-#add-to-cart {
-  width: 100%;
-}
-
-#price {
-  position: absolute;
-  top: 24px;
-  right: 16px;
+  max-width: 100%;
+  height: auto;
 }
 
 p {
   text-align: justify;
 }
 
-@media screen and (max-width: 768px) {
-  img {
-    height: 300px;
-    width: 300px;
-    margin: 0;
-  }
-  #grid-wrap {
-    align-items: center;
-    justify-content: center;
-  }
-  .product-item {
-    width: 90%; /* Make each product item take up the full width on smaller screens */
-  }
+.rounded {
+  border-radius: 5px;
+}
+
+.p-3 {
+  padding: 1rem;
+}
+
+.quantity-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.quantity-controls button {
+  margin: 0 10px;
 }
 </style>

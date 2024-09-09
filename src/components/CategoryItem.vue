@@ -1,5 +1,5 @@
 <template>
-  <div class="category-item list-group-item" @click="onClick(category.id)">
+  <div class="category-item list-group-item text-dark bg-light" @click="onClick(category.id)">
     {{ category.name }}
   </div>
 </template>
@@ -22,9 +22,7 @@ export default {
 </script>
 
 <style scoped>
-.category-item {
-  background-color: white;
-  color: black;
+.category-item {  
   cursor: pointer;
   transition: background-color 0.3s;
 }

@@ -97,9 +97,12 @@ img {
 }
 
 #quantity {
-  padding: 4px 8px; /* Reduced padding for button size */
+  padding: 5px; /* Reduced padding for button size */
+  padding-left: 8px;
+  padding-right: 8px;
   border-radius: 5px;
   transition: all ease 0.3s;
+  width: 3vw;
 }
 
 #quantity:hover {

@@ -1,8 +1,9 @@
 <template>
   <div id="page-wrap-container" class="container-fluid">
     <div class="row">
-      <!-- Categories List -->
+      <!-- Sidebar with Filter and Categories List -->
       <div class="col-md-3 bg-light p-3">
+        <FilterProduct @filterChanged="handleFilterChange" />
         <CategoriesList @categorySelected="filterProductsByCategory" />
       </div>
       <!-- Products Grid -->
@@ -17,24 +18,35 @@
 import { products } from "../fake-data";
 import ProductsGrid from "../components/ProductsGrid.vue";
 import CategoriesList from '../components/CategoriesList.vue';
+import FilterProduct from '../components/FilterProduct.vue';
 
 export default {
   name: "ProductsPage",
   components: {
     ProductsGrid,
-    CategoriesList
+    CategoriesList,
+    FilterProduct
   },
   data() {
     return {
       products,
       filteredProducts: products, // Start with all products displayed
+      selectedPriceRange: [2, 50], // Default price range for the filter
     }
   },
   methods: {
     filterProductsByCategory(categoryId) {
       this.filteredProducts = this.products.filter(product => product.categoryId === categoryId);
-      console.log(`Category ID: ${categoryId}`);
-      console.log('Filtered Products:', this.filteredProducts);
+    },
+    handleFilterChange({ priceRange }) {
+      this.selectedPriceRange = priceRange;
+      this.applyFilters();
+    },
+    applyFilters() {
+      this.filteredProducts = this.products.filter(product => {
+        const inPriceRange = product.price >= this.selectedPriceRange[0] && product.price <= this.selectedPriceRange[1];
+        return inPriceRange;
+      });
     }
   }
 }
@@ -53,5 +65,10 @@ export default {
 
 .bg-light {
   background-color: #f8f9fa !important;
+}
+
+/* Ensure consistent width for Filter and Categories List */
+.col-md-3 {
+  max-width: 100%; /* Adjust max-width to keep both components the same width */
 }
 </style>

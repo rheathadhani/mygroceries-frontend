@@ -1,95 +1,143 @@
 <template>
-    <div class="container">
-        <div class="sidebar">
-            <h2>Manage <br> your acessibility</h2>
-        <ul>
-            <li @click="currentComponent='ColourModeSettings'">Colour Contrast</li>
-            <li @click="currentComponent='SpeechSettings'">Speech</li>
-            <li @click="currentComponent='FontSettings'">Text Visibility</li>
-        </ul>
+  <div class="container mt-4">
+    <!-- Row for Settings Cards -->
+    <div class="row">
+      <!-- Column for Color Mode -->
+      <div class="col-md-4 mt-4">
+        <div class="card mb-3">
+          <div class="card-header bg-dark text-white text-center">
+            Color Mode
+          </div>
+          <div class="card-body">
+            <p class="text-dark"><strong>Choose your preferred color mode</strong> </p>
+            <p class="text-dark">Light Mode (Default)</p>
+            <!-- Example for Light Mode -->
+            <div class="mb-3" style="background-color: #f8f9fa; color: #343a40; border: 1px solid #ddd;">
+              <p class="text-dark mb-2 mt-2 sample">Sample Text</p>
+            </div>
+            <button class="btn btn-secondary border-dark mb-3 w-100">Switch to light mode</button>
+            <p class="text-dark">Dark Mode</p>
+            <!-- Example for Dark Mode -->
+            <div style="background-color: #343a40; color: #ffffff; border: 1px solid #ddd;">
+              <p class="text-light mb-2 mt-2 sample">Sample Text</p>
+            </div>
+            <button class="btn btn-secondary border-dark mt-3 w-100">Switch to Dark Mode</button>
+          </div>
         </div>
-        <div class="content">
-            <component :is="currentComponent"></component>
+      </div>
+
+      <!-- Column for Font Settings -->
+      <div class="col-md-4 mt-4">
+        <div class="card mb-3">
+          <div class="card-header bg-dark text-white text-center">
+            Font Settings
+          </div>
+          <div class="card-body">
+            <p><strong>Adjust your screen font size</strong></p>
+
+            <!-- Small Font Size Example -->
+            <div class="mb-3">
+              <h3 class="font-example">Sample Text </h3>
+              <button class="btn btn-secondary border-dark w-100">Small</button>
+            </div>
+
+            <!-- Medium Font Size Example -->
+            <div class="mb-3">
+              <h2 class="font-example">Sample Text </h2>
+              <button class="btn btn-secondary border-dark w-100">Medium</button>
+            </div>
+
+            <!-- Large Font Size Example -->
+            <div class="mb-3">
+              <h1 class="font-example">Sample Text</h1>
+              <button class="btn btn-secondary border-dark w-100">Large</button>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Column for Speech Settings -->
+      <div class="col-md-4 mt-4">
+        <div class="card mb-3">
+          <div class="card-header bg-dark text-white text-center">
+            Speech Settings
+          </div>
+          <div class="card-body">
+            <p><strong>Enable or disable speech feedback</strong></p>
+            <button class="btn btn-light border-dark w-100 mb-3">Enable Speech</button>
+            <button class="btn btn-secondary border-dark w-100 mb-4">Disable Speech</button>
+            <p><strong>Choose your speech type</strong></p>
+            <select id="voiceSelect" class="form-control mb-3"></select>
+          </div>
+        </div>
+      </div>
+      <!-- End of cards -->
     </div>
+  </div>
 </template>
 
-
 <script>
-import SpeechSettings from './SpeechSettings.vue';
-import ColourModeSettings from './ColourModeSettings.vue';
-import FontSettings from './FontSettings.vue';
+
 
 export default {
-    name:'SettingsMainContent',
-    components: {
-        SpeechSettings,
-        ColourModeSettings,
-        FontSettings
-    },
-    data(){
-        return{
-            currentComponent: 'ColourModeSettings'
-        }
+  name: "SettingsMainContent",
+  mounted() {
+    this.populateVoiceList();
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = this.populateVoiceList;
     }
+  },
+  methods: {
+    populateVoiceList() {
+      if (typeof speechSynthesis === 'undefined') {
+        return;
+      }
+
+      var voices = speechSynthesis.getVoices();
+      var voiceSelect = document.getElementById('voiceSelect');
+
+      voices.forEach((voice) => {
+        var option = document.createElement('option');
+        option.textContent = `${voice.name} (${voice.lang})`;
+
+        if (voice.default) {
+          option.textContent += ' — DEFAULT';
+        }
+
+        option.setAttribute('data-lang', voice.lang);
+        option.setAttribute('data-name', voice.name);
+        voiceSelect.appendChild(option);
+      });
+    },
+    // Method to show toast notification
+  }
 }
+
 </script>
 
 <style scoped>
 .container {
-  display: flex;
-  height: 100vh;
+  max-width: 100%;
+  /* Full width for the container */
 }
 
-h2 {
-  color: #000;
-  margin-left: 20px;
+.font-example {
+  text-align: center;
 }
 
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    border: 1px;
-    color: white; /* White text */
-    padding: 10px;
-    width: 20%;
-    margin-top: 25px; 
+.sample {
+  text-align: center;
 }
 
-.profile {
-  margin-bottom: 20px;
+.card {
+  height: 100%;
 }
 
-.profile-pic {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
+.card-header {
+  text-align: center;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  background-color: white;
-  color: black;
-  padding: 20px 20px;
-  border-bottom: 1px solid #ccc; /* Lighter border for a subtle look */
-  cursor: pointer;
-  transition: background-color 0.3s;
-} 
-
-li:hover {
-  background-color: #f7f7f7;
-}
-
-.content {
-  flex: 1;
-  background-color: #fff;
-  color: #000;
-  padding: 20px;
-  margin-left: 20px;
-  /*background-color: #f7f7f7;*/
+.card-header:hover {
+  background-color: #343a40;
 }
 </style>

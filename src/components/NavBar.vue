@@ -1,26 +1,43 @@
 <template>
   <nav id="nav-bar" class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <router-link to="/products" id="products-link" class="navbar-brand">
-      <h1>MyGroceries</h1>
+    <!-- Brand -->
+    <router-link to="/products" class="navbar-brand">
+      <h1 class="d-none d-lg-block">MyGroceries</h1>
+      <h4 class="d-lg-none mt-2">MyGroceries</h4>
     </router-link>
 
-    <div id="search-bar" class="d-flex mx-auto pt-2">
-      <input type="text" class="form-control" placeholder="Search for items">
-      <button class="btn btn-light search-button">Search</button>
-    </div>
+    <!-- Toggle button for mobile view -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+      aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <div id="nav-icons" class="d-flex align-items-center">  
-      <router-link to="/settings" id="setting-icon" class="nav-link">
-        <img src="../assets/icons/setting.png" alt="setting icon">
-      </router-link>
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarContent">
+      <!-- Search bar and button (centered in the navbar) -->
+      <div class="search-container d-flex justify-content-center mx-auto my-lg-0">
+        <input type="text" class="form-control me-2" placeholder="Search for items" style="width: 60%;" />
+        <button class="btn btn-light search-button border-dark">Search</button>
+      </div>
 
-      <router-link to="/profile" id="profile-icon" class="nav-link">
-        <img src="../assets/icons/user.png" alt="profile icon">
-      </router-link>
-
-      <router-link to="/cart" id="cart-link" class="nav-link">
-        <button class="btn btn-light cart-button">My Cart</button>
-      </router-link>
+      <!-- Navbar links (aligned to the right in the navbar) -->
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <router-link to="/settings" class="nav-link">
+            Settings
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/profile" class="nav-link">
+            Profile
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/cart" class="nav-link">
+            My Cart
+          </router-link>
+        </li>
+      </ul>
     </div>
   </nav>
 </template>
@@ -28,62 +45,67 @@
 <script>
 export default {
   name: "NavBar",
-}
+};
 </script>
 
 <style scoped>
 #nav-bar {
-  border-bottom: 0.5px solid #ddd;
-  height: 75px;
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 0.5px solid #ddd;
   box-sizing: border-box;
-
 }
 
-#products-link {
-  color: white;
-  font-size: 22px;
-  text-decoration: none;
+.navbar-toggler {
+  padding: 0.25rem 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
-#products-link h1 {
-  margin: 0;
-  color: white;
+.search-container {
+  width: 100%;
+  max-width: 700px;
+  /* Adjust max-width for larger screens */
 }
 
-#search-bar input {
-  padding: 8px;  /* Reduced padding */
-  border: 0.5px solid #fff;
-  border-radius: 5px 0 0 5px;
-  outline: none;
-  width: 30vw;
+.navbar-nav {
+  margin-left: auto;
 }
 
-#search-bar button.search-button {
-  padding: 8px 12px;  /* Reduced padding */
-  border-radius: 0 5px 5px 0;
-  cursor: pointer;
-  height: 5.8vh; /* Auto height */
+@media (max-width: 992px) {
+  .search-container {
+    max-width: 60%;
+    /* Adjust width for medium screens */
+  }
+
+  .navbar-brand h1 {
+    display: none;
+  }
+
+  .navbar-brand h4 {
+    display: block;
+  }
 }
 
-#nav-icons img, #nav-icons button {
-  margin-left: 20px;
+@media (max-width: 576px) {
+  .search-container {
+    max-width: 120%;
+    /* Adjust width for small screens */
+  }
 }
 
-img {
-  width: 30px;
-  height: 30px;
+.search-button {
+  width: auto;
+  height: auto;
+  padding: 5px 10px;
 }
 
-#cart-link button.cart-button {
-  padding: 8px 12px; /* Reduced padding */
-  text-transform: uppercase;
-  transition: background-color 0.3s, color 0.3s;
-  height: auto; /* Auto height */
+@media (max-width: 992px) {
+  .search-button {
+    padding: 4px 8px;
+  }
 }
-
 </style>

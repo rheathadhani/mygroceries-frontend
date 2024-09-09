@@ -12,7 +12,7 @@ import SettingsPage from '../views/SettingsPage.vue';
 import CheckoutPage from '../views/CheckoutPage.vue';
 
 //Import admin views
-import AdminPortal from '../views/AdminPortal.vue';
+import AdminPage from '../views/admin/AdminPage.vue';
 
 
 const routes = [
@@ -52,8 +52,8 @@ const routes = [
   },
   {
     path: "/admin",
-    name: "AdminPortal",
-    component: AdminPortal
+    name: "AdminPage",
+    component: AdminPage
   },
   {
     path: "/checkout",

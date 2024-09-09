@@ -1,7 +1,7 @@
 <template>
-  <div class="categories-list bg-dark">
-    <h2 class="text-white mb-4"> Browse <br> Categories </h2>
-    <div class="list-group ">
+  <div class="categories-list bg-dark mb-3">
+    <h3 class="text-white mb-4"> Browse <br> Categories </h3>
+    <div class="list-group">
       <CategoryItem 
         v-for="category in categories" 
         :key="category.id" 
@@ -43,21 +43,18 @@ export default {
 
 <style scoped>
 .categories-list {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  width: 90%; /* Adjusts to fit container width */
-  
-  height: auto;
-  border-radius: 8px; /* Rounds the corners for a modern look */
+  border: 1px solid #ddd; /* Match the button's border color */
+  border-radius: 5px; /* Similar rounding to the button */
+  padding: 10px; /* Same padding as filter bar */
+  background-color: #343a40; /* Keep the dark background color */
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Same shadow style as the filter button */
 }
 
-h2 {
-  color: #333;
-  font-size: 1.8rem; /* Slightly larger and bolder for emphasis */
-  margin-left: 10px;
-  margin-top: 0;
-  font-family: 'Roboto', sans-serif; /* Adds a modern font style */
+/* Keep all existing styles unchanged */
+h3 {
+  color: #fff;
+  margin: 0;
+  padding-left: 10px;
 }
 
 .list-group-item {
@@ -87,3 +84,5 @@ h2 {
   font-size: 1.2rem;
 }
 </style>
+
+

@@ -1,120 +1,90 @@
 <template>
-    <div class="personal-details">
-        <h2>Personal Details</h2>
+    <div class="personal-details card shadow-sm mx-auto">
+      <!-- Card Header for Personal Details -->
+      <div class="card-header bg-dark text-white text-center mb-2 py-2">
+        Personal Details
+      </div>
+      
+      <!-- Form Section -->
+      <div class="card-body">
         <form @submit.prevent="submitForm" method="post">
-            <div class="form-group">
-                <label for="fullName">Full Name</label>
-                <input type="text" id="fullName" v-model="fullName" required />
-            </div>
-
-            <div class="form-group">
-                <label for="phoneNumber">Phone Number</label>
-                <input type="tel" id="phoneNumber" v-model="phoneNumber" required />
-            </div>
-
-            <div class="form-group">
-                <label for="address">Address</label>
-                <select id="address" v-model="selectedAddress" required>
-                    <option v-for="(address, index) in addresses" :key="index" :value="address">
-                        {{ address }}
-                    </option>
-                </select>
-            </div>
-
-            <button type="submit" class="submit-button">Save</button>
+          <!-- Full Name Field -->
+          <div class="form-group mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" id="fullName" v-model="fullName" class="form-control" required />
+          </div>
+  
+          <!-- Phone Number Field -->
+          <div class="form-group mb-3">
+            <label for="phoneNumber" class="form-label">Phone Number</label>
+            <input type="tel" id="phoneNumber" v-model="phoneNumber" class="form-control" required />
+          </div>
+  
+          <!-- Address Selection -->
+          <div class="form-group mb-4">
+            <label for="address" class="form-label">Address</label>
+            <select id="address" v-model="selectedAddress" class="form-control" required>
+              <option value="" disabled class="text-light">Select an address</option>
+              <option v-for="(address, index) in addresses" :key="index" :value="address.fullAddress">
+                {{ address.fullAddress }}
+              </option>
+            </select>
+          </div>
+  
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-dark w-100">Save</button>
         </form>
+      </div>
     </div>
-</template>
-
-<script>
-export default {
+  </template>
+  
+  <script>
+  // Import MyAddresses component data
+  import MyAddresses from './MyAddresses.vue';
+  
+  export default {
     name: 'PersonalDetailsCheckout',
     data() {
-        return {
-            fullName: '',
-            phoneNumber: '',
-            selectedAddress: '',
-            addresses: [
-                '123 Main St, Kuala Lumpur',
-                '456 Market Ave, Bukit Jalil',
-                '789 High St, Petaling Jaya',
-            ],
-        };
+      return {
+        fullName: '',
+        phoneNumber: '',
+        selectedAddress: '',
+        addresses: MyAddresses.data().addresses, // Use data from MyAddresses
+      };
     },
     methods: {
-        submitForm() {
-            // Handle form submission logic here
-            console.log('Full Name:', this.fullName);
-            console.log('Phone Number:', this.phoneNumber);
-            console.log('Selected Address:', this.selectedAddress);
-            // Add more submission logic as needed
-        },
+      submitForm() {
+        // Handle form submission logic here
+        console.log('Full Name:', this.fullName);
+        console.log('Phone Number:', this.phoneNumber);
+        console.log('Selected Address:', this.selectedAddress);
+        // Add more submission logic as needed
+      },
     },
-};
-</script>
-
-<style scoped>
-.personal-details {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+  };
+  </script>
+  
+  <style scoped>
+  .personal-details {
+    max-width: 500px; /* Match the width to other components for consistency */
+    margin: 0 auto; /* Center align within the parent */
+    border-radius: 8px; /* Consistent border radius */
     background-color: #ffffff;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
-}
-
-.personal-details h2 {
-    margin-bottom: 20px;
-    font-size: 1.5em;
-    font-family: Arial, sans-serif;
-    font-weight: bold;
-    color: #333;
-    text-align: center;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-}
-
-label {
-    font-size: 1em;
-    color: #000000;
+  }
+  
+  .card-header {
+    font-size: 16px; /* Font size matching the other components */
+  }
+  
+  .form-label {
+    color: #000;
     margin-bottom: 5px;
     text-align: left;
-    /* Align labels to the left */
-}
-
-input,
-select {
-    width: 100%;
-    padding: 10px;
-    font-size: 1em;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-.submit-button {
-    width: 100%;
-    padding: 12px;
-    font-size: 1em;
-    font-weight: bold;
-    color: #fff;
-    background-color: #000;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-align: center;
-    border: 2px solid #000;
+  }
+  
+  .btn {
     transition: background-color 0.3s, color 0.3s;
-}
-
-.submit-button:hover {
-    background-color: #ffffff;
-    color: #000;
-}
-</style>
+  }
+  
+  </style>
+  

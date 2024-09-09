@@ -2,8 +2,8 @@
   <div class="container-fluid">
     <div class="row">
       <!-- Sidebar -->
-      <div class="col-md-5 mt-0 col-lg-2 bg-dark p-4 text-white">
-        <h2 class="mb-4 mt-3 ml-0">Manage <br> your account</h2>
+      <div class="col-12 col-md-3 col-lg-2 bg-dark p-4 text-white sidebar">
+        <h3 class="mb-4 mt-3 ml-0">Manage <br> your account</h3>
         <ul class="list-group">
           <li class="list-group-item list-group-item-action bg-dark text-white border-light"
             @click="currentComponent = 'MyProfile'">
@@ -29,13 +29,12 @@
       </div>
 
       <!-- Content -->
-      <div class="col-md-9 col-lg-10 p-4">
+      <div class="col-12 col-md-9 col-lg-10 p-4">
         <component :is="currentComponent"></component>
       </div>
     </div>
   </div>
 </template>
-
 
 <script>
 import MyProfile from './MyProfile.vue'
@@ -62,19 +61,9 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  height: 100vh;
-}
-
-h2 {
-  font-size: 1.5rem;
-  color: #fff;
-  margin-bottom: 20px;
-}
-
-ul {
-  padding-left: 0;
+.sidebar {
+  min-height: 100vh;
+  height: auto;
 }
 
 .list-group-item {
@@ -89,9 +78,7 @@ ul {
 
 .list-group-item:hover {
   background-color: #495057;
-  /* Slightly darker on hover */
-  transform: scale(1.1);
-  /* Subtle lift on hover */
+  transform: scale(1.05);
 }
 
 .content {
