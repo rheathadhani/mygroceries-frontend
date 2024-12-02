@@ -1,8 +1,8 @@
 <template>
-  <nav id="nav-bar" class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav v-if="isLoggedIn()" id="nav-bar" class="navbar navbar-expand-lg navbar-dark bg-dark">
     <!-- Brand -->
     <router-link to="/products" class="navbar-brand">
-      <h1 class="d-none d-lg-block">MyGroceries</h1>
+      <h3 class="d-none d-lg-block mt-2">MyGroceries</h3>
       <h4 class="d-lg-none mt-2">MyGroceries</h4>
     </router-link>
 
@@ -16,41 +16,71 @@
     <div class="collapse navbar-collapse" id="navbarContent">
       <!-- Search bar and button (centered in the navbar) -->
       <div class="search-container d-flex justify-content-center mx-auto my-lg-0">
-        <input type="text" class="form-control me-2" placeholder="Search for items" style="width: 60%;" />
-        <button class="btn btn-light search-button border-dark">Search</button>
+        <input type="text" v-model="searchTerm" class="form-control me-2" placeholder="Search for items"
+          style="width: 60%;" @keyup.enter="searchProducts" />
+        <button class="btn btn-light search-button border-dark" @click="searchProducts">Search</button>
       </div>
 
       <!-- Navbar links (aligned to the right in the navbar) -->
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <router-link to="/settings" class="nav-link">
-            Settings
-          </router-link>
+          <router-link to="/settings" class="nav-link">Settings</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/profile" class="nav-link">
-            Profile
-          </router-link>
+          <router-link to="/profile" class="nav-link">Profile</router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/cart" class="nav-link">
-            My Cart
-          </router-link>
+          <router-link to="/cart" class="nav-link">My Cart</router-link>
+        </li>
+        <!-- Logout option -->
+        <li class="nav-item">
+          <a class="nav-link" href="#" @click="logout">Logout</a>
         </li>
       </ul>
     </div>
   </nav>
+
+  <div v-else>
+    <!-- When not logged in, hide the navbar and show a "Back to Login" button -->
+  </div>
 </template>
 
 <script>
 export default {
   name: "NavBar",
+  data() {
+    return {
+      searchTerm: '' // Bind the search input to this data
+    };
+  },
+  methods: {
+    isLoggedIn() {
+      // Logic to check if the user is logged in (for example, based on the token)
+      return !!localStorage.getItem('authToken'); // Check if a token exists in localStorage
+    },
+    searchProducts() {
+      if (this.searchTerm.trim()) {
+        // Push to the /products route with the search query as a parameter
+        this.$router.push({ path: '/products', query: { search: this.searchTerm } });
+      }
+    },
+    logout() {
+      // Clear the token from localStorage
+      localStorage.removeItem('authToken');
+      // Redirect to the welcome page
+      this.$router.push('/welcome');
+    },
+    goToLogin() {
+      this.$router.push("/welcome"); // Redirect to the login/welcome page
+    }
+  }
 };
 </script>
 
 <style scoped>
 #nav-bar {
   width: 100%;
+  height: auto;
   padding: 0 20px;
   display: flex;
   align-items: center;
@@ -68,7 +98,6 @@ export default {
 .search-container {
   width: 100%;
   max-width: 700px;
-  /* Adjust max-width for larger screens */
 }
 
 .navbar-nav {
@@ -78,7 +107,6 @@ export default {
 @media (max-width: 992px) {
   .search-container {
     max-width: 60%;
-    /* Adjust width for medium screens */
   }
 
   .navbar-brand h1 {
@@ -93,7 +121,6 @@ export default {
 @media (max-width: 576px) {
   .search-container {
     max-width: 120%;
-    /* Adjust width for small screens */
   }
 }
 

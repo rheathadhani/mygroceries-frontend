@@ -2,19 +2,15 @@
   <div class="categories-list bg-dark mb-3">
     <h3 class="text-white mb-4"> Browse <br> Categories </h3>
     <div class="list-group">
-      <CategoryItem 
-        v-for="category in categories" 
-        :key="category.id" 
-        :category="category" 
-        @click="handleCategorySelect(category.id)"
-        class="list-group-item list-group-item-action mb-2"
-      />
+      <CategoryItem v-for="category in categories" :key="category.categoryID" :category="category"
+        @click="handleCategorySelect(category.categoryID)" class="list-group-item list-group-item-action mb-2" />
     </div>
   </div>
 </template>
 
 <script>
 import CategoryItem from './CategoryItem.vue';
+import axios from 'axios';
 
 export default {
   name: "CategoriesList",
@@ -23,34 +19,39 @@ export default {
   },
   data() {
     return {
-      categories: [
-        { id: 1, name: 'Electronics', icon: 'fas fa-tv' },
-        { id: 2, name: 'Clothing', icon: 'fas fa-tshirt' },
-        { id: 3, name: 'Home & Garden', icon: 'fas fa-home' },
-        { id: 4, name: 'Fruits', icon: 'fas fa-apple-alt' },
-        { id: 5, name: 'Fresh Meat', icon: 'fas fa-drumstick-bite' }
-      ]
+      categories: [] // Holds the fetched categories
     };
   },
   methods: {
-    handleCategorySelect(id) {
-      // Emit the selected category ID to the parent component
-      this.$emit('categorySelected', id);
+    async fetchCategories() {
+      try {
+        const response = await axios.get('http://localhost:5500/categories');
+        this.categories = response.data; // Populate the categories
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    },
+    handleCategorySelect(categoryID) {
+      // Emit the selected categoryID to the parent component
+      this.$emit('categorySelected', categoryID);
     }
+  },
+  mounted() {
+    this.fetchCategories(); // Fetch the categories when the component is mounted
   }
 };
 </script>
 
+
 <style scoped>
 .categories-list {
-  border: 1px solid #ddd; /* Match the button's border color */
-  border-radius: 5px; /* Similar rounding to the button */
-  padding: 10px; /* Same padding as filter bar */
-  background-color: #343a40; /* Keep the dark background color */
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Same shadow style as the filter button */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #343a40;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-/* Keep all existing styles unchanged */
 h3 {
   color: #fff;
   margin: 0;
@@ -84,5 +85,3 @@ h3 {
   font-size: 1.2rem;
 }
 </style>
-
-

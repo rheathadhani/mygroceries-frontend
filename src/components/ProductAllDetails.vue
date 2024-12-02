@@ -10,15 +10,15 @@
               <tbody>
                 <tr>
                   <th>Image</th>
-                  <td><img :src="product.image" alt="Product Image" class="img-fluid"/></td>
+                  <td><img :src="product.imageURL" alt="Product Image" class="img-fluid"/></td>
                 </tr>
                 <tr>
                   <th>ID</th>
-                  <td>{{ product.id }}</td>
+                  <td>{{ product.productID }}</td>
                 </tr>
                 <tr>
                   <th>Name</th>
-                  <td>{{ product.name }}</td>
+                  <td>{{ product.productName }}</td>
                 </tr>
                 <tr>
                   <th>Price</th>
@@ -26,15 +26,11 @@
                 </tr>
                 <tr>
                   <th>Category</th>
-                  <td>{{ product.category }}</td>
+                  <td>{{ product.categoryName }}</td>
                 </tr>
                 <tr>
                   <th>Description</th>
                   <td>{{ product.description }}</td>
-                </tr>
-                <tr>
-                  <th>Created Date</th>
-                  <td>{{ formatDate(product.createdDate) }}</td>
                 </tr>
                 <tr>
                   <th>Updated Date</th>
@@ -57,7 +53,7 @@
     },
     methods: {
       formatDate(date) {
-        return new Date(date).toLocaleDateString('en-US', { dateStyle: 'short' });
+        return new Date(date).toLocaleDateString('en-US');
       }
     }
   };

@@ -12,15 +12,15 @@
       </div>
       <form @submit.prevent="resetPassword">
         <div class="mb-3">
-          <input type="password" v-model="oldPassword" class="form-control" placeholder="Enter your old password"
-            required>
+          <input type="email" v-model="email" class="form-control" placeholder="Enter your email" required />
         </div>
         <div class="mb-3">
           <input type="password" v-model="password" @input="validatePassword" class="form-control"
-            placeholder="Enter your new password" required>
+            placeholder="Enter your new password" required />
         </div>
-        <button class="btn btn-dark w-100">Reset</button>
-        <p class="text-dark mt-4 text-center">Password Changed!</p>
+        <button class="btn btn-dark w-100" :disabled="!isFormValid">Reset</button>
+        <p v-if="successMessage" class="text-success mt-4 text-center">{{ successMessage }}</p>
+        <p v-if="errorMessage" class="text-danger mt-4 text-center">{{ errorMessage }}</p>
       </form>
       <div class="text-center mt-4">
         <a href="#" @click.prevent="emitLoginForm" class="text-dark">Back to Login</a>
@@ -30,15 +30,25 @@
 </template>
 
 <script>
+import axios from 'axios'; // Import Axios for making API calls
+
 export default {
   name: 'ForgotPasswordForm',
   data() {
     return {
+      email: '',
       password: '',
       passwordLengthValid: false,
       passwordUpperCaseValid: false,
       passwordSpecialCharValid: false,
+      successMessage: null,
+      errorMessage: null,
     };
+  },
+  computed: {
+    isFormValid() {
+      return this.passwordLengthValid && this.passwordUpperCaseValid && this.passwordSpecialCharValid;
+    },
   },
   methods: {
     validatePassword() {
@@ -46,13 +56,28 @@ export default {
       this.passwordUpperCaseValid = /[A-Z]/.test(this.password);
       this.passwordSpecialCharValid = /[!@#$]/.test(this.password);
     },
-    resetPassword() {
-      // Your reset password logic here
+    async resetPassword() {
+      try {
+        const response = await axios.post('http://localhost:5500/reset-password', {
+          email: this.email,
+          newPassword: this.password,
+        });
+        this.successMessage = response.data.message;
+        this.errorMessage = null;
+        console.log(response);
+      } catch (error) {
+        this.successMessage = null;
+        if (error.response && error.response.data) {
+          this.errorMessage = error.response.data.message;
+        } else {
+          this.errorMessage = 'An error occurred. Please try again later.';
+        }
+      }
     },
     emitLoginForm() {
       this.$emit('showLoginForm');
     },
-  }
+  },
 };
 </script>
 

@@ -11,8 +11,8 @@
         <div class="filter-section mb-3">
             <p>Filter By Price</p>
           <div class="d-flex justify-content-between mb-1">
-            <span>${{ priceRange[0] }}</span>
-            <span>${{ priceRange[1] }}</span>
+            <span>RM {{ priceRange[0] }}</span>
+            <span>RM {{ priceRange[1] }}</span>
           </div>
           <input type="range" class="form-range" id="priceRange" min="0" max="500" v-model="priceRange[0]" step="10" @input="updatePriceFilter">
         </div>

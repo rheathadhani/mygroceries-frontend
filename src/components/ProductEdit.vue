@@ -9,7 +9,7 @@
           <form @submit.prevent="save">
             <div class="mb-3">
               <label for="productName" class="form-label">Name</label>
-              <input type="text" id="productName" v-model="editableProduct.name" class="form-control">
+              <input type="text" id="productName" v-model="editableProduct.productName" class="form-control">
             </div>
             <div class="mb-3">
               <label for="productPrice" class="form-label">Price</label>
@@ -17,8 +17,11 @@
             </div>
             <div class="mb-3">
               <label for="productCategory" class="form-label">Category</label>
-              <select id="productCategory" v-model="editableProduct.category" class="form-control">
-                <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+              <select id="productCategory" v-model="editableProduct.categoryID" class="form-control">
+                <option value="" disabled>Select Category</option>
+                <option v-for="category in categories" :key="category.id" :value="category.id">
+                  {{ category.name }}
+                </option>
               </select>
             </div>
             <div class="mb-3">
@@ -26,8 +29,8 @@
               <textarea id="productDescription" v-model="editableProduct.description" class="form-control"></textarea>
             </div>
             <div class="mb-3">
-              <label for="productImage" class="form-label">Image</label>
-              <input type="file" id="productImage" @change="onFileChange" class="form-control">
+              <label for="productImage" class="form-label">Image URL</label>
+              <input type="text" id="productImage" v-model="editableProduct.imageURL" class="form-control">
             </div>
             <button type="submit" class="btn btn-success me-2">Save</button>
             <button type="button" class="btn btn-secondary" @click="cancelEdit">Cancel</button>
@@ -39,6 +42,8 @@
 </template>
 
 <script>
+import axios from 'axios';  // Import Axios for making HTTP requests
+
 export default {
   name: "ProductEdit",
   props: {
@@ -47,22 +52,68 @@ export default {
   },
   data() {
     return {
-      editableProduct: { ...this.product }, // Create a copy of the product data for editing
+      editableProduct: {
+        productID: this.product.productID,
+        productName: this.product.productName,
+        price: this.product.price,
+        categoryID: this.product.categoryID ? String(this.product.categoryID) : "", // Ensure correct categoryID
+        description: this.product.description,
+        imageURL: this.product.imageURL,
+      },
     };
   },
+  watch: {
+    product: {
+      immediate: true,
+      handler(newProduct) {
+        this.editableProduct = {
+          productID: newProduct.productID,
+          productName: newProduct.productName,
+          price: newProduct.price,
+          categoryID: newProduct.categoryID ? String(newProduct.categoryID) : "",
+          description: newProduct.description,
+          imageURL: newProduct.imageURL,
+        };
+      },
+    },
+  },
   methods: {
-    save() {
-      this.editableProduct.updatedDate = new Date().toISOString(); // Update 'updatedDate' to current date and time
-      this.$emit('save-product', this.editableProduct); // Emit the updated product to the parent component
+    async save() {
+      this.editableProduct.updatedDate = new Date().toISOString();
+
+      // Get the token from localStorage
+      const token = localStorage.getItem('authToken');
+
+      try {
+        // Perform an Axios PATCH request to update the product
+        const response = await axios.patch(`http://localhost:5500/admin/products/${this.editableProduct.productID}`, {
+          productName: this.editableProduct.productName,
+          price: this.editableProduct.price,
+          categoryID: this.editableProduct.categoryID,
+          description: this.editableProduct.description,
+          imageURL: this.editableProduct.imageURL,
+          updatedDate: this.editableProduct.updatedDate,
+        }, {
+          headers: {
+            'Authorization': `Bearer ${token}`,  // Add Authorization header
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log(response.data.message);
+
+        // Emit the updated product to the parent component
+        this.$emit("save-product", this.editableProduct);
+
+        // Go back to the product table view after successful save
+        this.cancelEdit();  // Call the cancelEdit method to return to the table view
+      } catch (error) {
+        console.error('Failed to update product:', error);
+        alert('Failed to update product. Please try again.');
+      }
     },
     cancelEdit() {
-      this.$emit('back-to-table'); // Emit event to go back to table view without saving changes
-    },
-    onFileChange(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.editableProduct.image = URL.createObjectURL(file); // Update image preview
-      }
+      this.$emit("back-to-table");
     },
   },
 };

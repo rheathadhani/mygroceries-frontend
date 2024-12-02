@@ -3,7 +3,7 @@
     <!-- Sidebar Menu -->
     <ul class="sidebar-menu bg-dark text-light">
       <h3 class="pt-4 pb-1 pl-3 mb-0">MyGroceries</h3>
-      <p class="pl-3 mb-4">Admin's Space</p>
+      <p class="pl-3 mb-4 font-italic">Admin's Space</p>
       <li class="sidebar-item" @click="showContent('dashboard')">
         <font-awesome-icon :icon="['fas', 'chart-line']" size="xs" style="color: #ffffff; margin-right: 10px;" /> Dashboard
       </li>

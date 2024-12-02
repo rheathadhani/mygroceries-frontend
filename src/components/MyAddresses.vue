@@ -3,17 +3,21 @@
     <div class="address-container bg-white p-4 shadow-sm rounded border-dark shadow-sm">
       <div class="address-list">
         <div v-for="(address, index) in addresses" :key="index" class="address-entry border-bottom pb-3 mb-3">
+
           <div v-if="editIndex !== index">
-            <p><strong>{{ address.name }}</strong> ({{ address.phone }})</p>
-            <p class="display-address">{{ address.fullAddress }}</p>
+            <!-- Use 'Name', 'phoneNumber', and 'address' based on backend response -->
+            <p><strong>{{ address.Name }}</strong> ({{ address.phoneNumber }})</p>
+            <p class="display-address">{{ address.address }}</p>
             <button class="btn btn-dark btn-sm me-2 mr-2" @click="startEdit(index)">Edit</button>
             <button class="btn btn-light btn-sm border-dark" @click="deleteAddress(index)">Delete</button>
           </div>
+
           <div v-else>
-            <input v-model="editData.name" placeholder="Name" class="form-control mb-2">
-            <input v-model="editData.phone" placeholder="Phone Number" class="form-control mb-2">
-            <input v-model="editData.fullAddress" placeholder="Full Address" class="form-control mb-2">
-            <button class="btn btn-dark btn-sm me-2 mr-2" @click="saveEdit(index)">Save</button>
+            <!-- Input fields for editing/adding an address -->
+            <input v-model="editData.Name" placeholder="Name" class="form-control mb-2">
+            <input v-model="editData.phoneNumber" placeholder="Phone Number" class="form-control mb-2">
+            <input v-model="editData.address" placeholder="Full Address" class="form-control mb-2">
+            <button class="btn btn-dark btn-sm me-2 mr-2" @click="saveEdit()">Save</button>
             <button class="btn btn-light btn-sm border-dark" @click="cancelEdit()">Cancel</button>
           </div>
         </div>
@@ -23,47 +27,144 @@
   </div>
 </template>
 
-
 <script>
+import axios from 'axios';
+
 export default {
   name: "MyAddresses",
   data() {
     return {
-      addresses: [
-        { name: 'Rhea Thadhani', phone: '01136695428', fullAddress: 'Block A A-14-8, Endah Regal Condominium, Endah Regal Condomonium, Jalan 3/149e, Taman Sri Endah, W.P. Kuala Lumpur, W.P. Kuala Lumpur, 57000' },
-        { name: 'Youvna Mookhram - Richa Kissoondoyal', phone: '01128080114', fullAddress: 'D-16-3, Endah Promenade, Block D, No. 9, Jalan 1/149e, Taman Sri Endah, Sri Petaling, 57000, Petaling W.P. Kuala Lumpur, W.P. Kuala Lumpur, 57000' }
-      ],
-      editIndex: -1,
-      editData: {}
+      addresses: [], // Stores the list of addresses
+      editIndex: -1, // Keeps track of which address is being edited
+      editData: {} // Stores the current data for the address being edited or added
     }
   },
   methods: {
-    addAddress() {
-      const placeholder = { name: '', phone: '', fullAddress: '' };
-      this.addresses.push(placeholder);
-      this.startEdit(this.addresses.length - 1);
+    // Fetch addresses from the backend
+    async fetchAddresses() {
+      try {
+        const token = localStorage.getItem('authToken'); // Get the token from local storage
+        const response = await axios.get('http://localhost:5500/addresses', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        this.addresses = response.data; // Populate the addresses array with the response data
+        this.$emit('addressesFetched', this.addresses);
+      } catch (error) {
+        console.error('Failed to fetch addresses:', error);
+        alert('Failed to fetch addresses. Please try again.');
+      }
     },
+
+    // Start editing an existing address
     startEdit(index) {
-      this.editIndex = index;
-      this.editData = JSON.parse(JSON.stringify(this.addresses[index]));
+      this.editIndex = index; // Set the current editing index
+      this.editData = JSON.parse(JSON.stringify(this.addresses[index])); // Copy the selected address data into editData
     },
-    saveEdit(index) {
-      this.addresses.splice(index, 1, JSON.parse(JSON.stringify(this.editData)));
-      this.editIndex = -1;
+
+    // Add a new address
+    addAddress() {
+      // Create a blank placeholder for the new address
+      this.editData = { Name: '', phoneNumber: '', address: '' };
+      this.editIndex = this.addresses.length; // Set the edit index to the new item
+      this.addresses.push(this.editData); // Temporarily push it into the array
     },
+
+    // Save the edited or new address
+    async saveEdit() {
+      const token = localStorage.getItem('authToken'); // Get the token from local storage
+
+      // Ensure all fields are filled out
+      if (!this.editData.Name || !this.editData.phoneNumber || !this.editData.address) {
+        alert('All fields are required.');
+        return;
+      }
+
+      // If the address is new (no ID), send a POST request to add it
+      if (!this.editData.ID) {
+        try {
+          await axios.post('http://localhost:5500/addresses', this.editData, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          alert('Address added successfully!');
+          this.fetchAddresses(); // Refresh the address list
+        } catch (error) {
+          console.error('Failed to add address:', error);
+          alert('Failed to add address. Please try again.');
+        }
+      } else {
+        // If the address has an ID, send a PATCH request to update it
+        const updatedAddressData = {
+          name: this.editData.Name,
+          phoneNumber: this.editData.phoneNumber,
+          address: this.editData.address
+        };
+
+        try {
+          await axios.patch(`http://localhost:5500/addresses/${this.editData.ID}`, updatedAddressData, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          alert('Address updated successfully!');
+          this.fetchAddresses(); // Refresh the address list
+        } catch (error) {
+          console.error('Failed to update address:', error);
+          alert('Failed to update address. Please try again.');
+        }
+      }
+
+      this.editIndex = -1; // Exit edit mode
+    },
+
+    // Cancel editing an address
     cancelEdit() {
-      if (this.editIndex === this.addresses.length - 1 && this.addresses[this.editIndex].name === '' && this.addresses[this.editIndex].phone === '' && this.addresses[this.editIndex].fullAddress === '') {
+      if (this.editIndex === this.addresses.length - 1 && !this.addresses[this.editIndex].ID) {
+        // If it's a new address being added and the user cancels, remove it from the array
         this.addresses.pop();
       }
-      this.editIndex = -1;
+      this.editIndex = -1; // Exit edit mode
     },
-    deleteAddress(index) {
-      if (index !== this.editIndex) {
-        this.addresses.splice(index, 1);
-      } else {
-        alert("Finish editing the entry before deleting it.");
+
+    // Delete an address
+    async deleteAddress(index) {
+      const token = localStorage.getItem('authToken');  // Get the token from local storage
+      const addressID = this.addresses[index].ID;  // Ensure the address ID is being passed correctly
+
+      if (!addressID) {
+        alert('Invalid address ID');
+        return;
       }
-    }
+      console.log(addressID);
+
+      try {
+        const confirmed = confirm('Are you sure you want to delete this address?');  // Confirmation prompt
+        if (confirmed) {
+          await axios.delete(`http://localhost:5500/addresses/${addressID}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,  // Include token in headers
+            },
+          });
+          alert('Address deleted successfully!');
+          this.fetchAddresses();  // Refresh the address list
+        }
+      } catch (error) {
+        console.error('Failed to delete address:', error);
+        alert('Failed to delete address. Please try again.');
+      }
+    },
+  },
+
+  // Fetch the addresses when the component is mounted
+  mounted() {
+    this.fetchAddresses(); // Fetch addresses when the component is mounted
   }
 }
 </script>
@@ -78,7 +179,6 @@ export default {
   padding: 20px;
   background-color: #fff;
   overflow-x: hidden;
-  /* Prevent horizontal overflow */
 }
 
 h3 {

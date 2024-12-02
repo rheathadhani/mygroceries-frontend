@@ -14,7 +14,6 @@ import CheckoutPage from '../views/CheckoutPage.vue';
 //Import admin views
 import AdminPage from '../views/admin/AdminPage.vue';
 
-
 const routes = [
   {
     path: '/products',
@@ -22,7 +21,7 @@ const routes = [
     component: ProductsPage,
   },
   {
-    path: '/products/:id',
+    path: '/products/:productID',
     name: 'ProductDetail',
     component: ProductDetailPage,
   },
@@ -33,7 +32,7 @@ const routes = [
   },
   {
     path: '/',
-    redirect: '/products',
+    redirect: '/welcome',
   },
   {
     path: '/welcome',

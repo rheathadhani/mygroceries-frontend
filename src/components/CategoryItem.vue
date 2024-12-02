@@ -1,6 +1,6 @@
 <template>
-  <div class="category-item list-group-item text-dark bg-light" @click="onClick(category.id)">
-    {{ category.name }}
+  <div class="category-item list-group-item text-dark bg-light" @click="onClick(category.categoryID)">
+    {{ category.categoryName }}
   </div>
 </template>
 
@@ -13,9 +13,9 @@ export default {
     }
   },
   methods: {
-    onClick(id) {
+    onClick(categoryID) {
       // Emit an event or route to another component
-      this.$emit('categorySelected', id);
+      this.$emit('categorySelected', categoryID);
     }
   }
 };

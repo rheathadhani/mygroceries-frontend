@@ -5,7 +5,7 @@
         <div class="card-header category bg-dark text-white d-flex justify-content-between align-items-center">
           <!-- Header Title -->
           <h5 class="m-0">Category Management</h5>
-          
+
           <div>
             <!-- Generate Report Dropdown -->
             <div class="dropdown d-inline me-2">
@@ -28,7 +28,7 @@
             <!-- Search and Filter Controls -->
             <div class="row mb-3">
               <div class="col-md-9">
-                <input type="text" v-model="searchQuery" class="form-control" placeholder="Search by name">
+                <input type="text" v-model="searchQuery" class="form-control" placeholder="Search by Category Name">
               </div>
               <div class="col-md-3">
                 <!-- Button to toggle Filter Categories row -->
@@ -72,28 +72,34 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="category in filteredCategories" :key="category.id">
-                  <td>{{ category.id }}</td>
-                  <td v-if="editCategoryId !== category.id">{{ category.name }}</td>
+                <tr v-for="category in filteredCategories" :key="category.categoryID">
+                  <td>{{ category.categoryID }}</td> <!-- Use 'categoryID' instead of 'id' -->
+                  <td v-if="editCategoryId !== category.categoryID">{{ category.categoryName }}</td>
+
                   <td v-else>
-                    <input type="text" v-model="editCategoryData.name" class="form-control form-control-sm">
+                    <input type="text" v-model="editCategoryData.categoryName" class="form-control form-control-sm">
                   </td>
-                  <td v-if="editCategoryId !== category.id">{{ category.numProducts }}</td>
+                  <td v-if="editCategoryId !== category.categoryID">{{ category.noOfProducts }}</td>
+
                   <td v-else>
-                    <input type="number" v-model="editCategoryData.numProducts" class="form-control form-control-sm">
+                    <input type="number" v-model="editCategoryData.noOfProducts" class="form-control form-control-sm">
                   </td>
-                  <td>{{ category.updatedTime }}</td>
+                  <td>{{ category.updatedTime || 'N/A' }}</td>
+                  <!-- Add default value for 'updatedTime' if not available -->
                   <td>
-                    <div v-if="editCategoryId !== category.id">
+                    <div v-if="editCategoryId !== category.categoryID">
                       <button class="btn btn-sm btn-primary me-2" @click="editCategory(category)">Edit</button>
-                      <button class="btn btn-sm btn-danger" @click="deleteCategory(category.id)">Delete</button>
+                      <!--<button class="btn btn-sm btn-danger" @click="deleteCategory(category.categoryID)">Delete</button>-->
+                      <!-- Use 'categoryID' for actions -->
                     </div>
                     <div v-else>
-                      <button class="btn btn-sm btn-success me-2" @click="saveCategory(category.id)">Save</button>
+                      <button class="btn btn-sm btn-success me-2"
+                        @click="saveCategory(category.categoryID)">Save</button>
                       <button class="btn btn-sm btn-secondary" @click="cancelEdit">Cancel</button>
                     </div>
                   </td>
                 </tr>
+
               </tbody>
             </table>
           </div>
@@ -113,6 +119,7 @@
 import AddNewCategory from './AddNewCategory.vue'; // Import the AddNewCategory component
 import jsPDF from "jspdf"; // Import jsPDF for generating PDF files
 import "jspdf-autotable"; // Import AutoTable plugin for jsPDF
+import axios from 'axios'; // Import Axios
 
 export default {
   name: "CategoriesTable",
@@ -129,37 +136,27 @@ export default {
       filterOperator: "all", // Filter operator for number of products
       filterValue: "", // Value for filtering by number of products
       filterDate: "", // Date for filtering by updated time
-      categories: [
-        { id: 1, name: 'Electronics', numProducts: 120, updatedTime: '2024-09-01 10:00 AM' },
-        { id: 2, name: 'Groceries', numProducts: 200, updatedTime: '2024-09-01 11:30 AM' },
-        { id: 3, name: 'Clothing', numProducts: 85, updatedTime: '2024-09-01 01:15 PM' },
-        { id: 4, name: 'Books', numProducts: 50, updatedTime: '2024-09-01 02:45 PM' },
-        { id: 5, name: 'Toys', numProducts: 40, updatedTime: '2024-09-01 03:30 PM' },
-        { id: 6, name: 'Furniture', numProducts: 70, updatedTime: '2024-09-01 04:10 PM' },
-        { id: 7, name: 'Health & Beauty', numProducts: 130, updatedTime: '2024-09-01 05:00 PM' },
-        { id: 8, name: 'Sports', numProducts: 90, updatedTime: '2024-09-01 05:45 PM' },
-        { id: 9, name: 'Automotive', numProducts: 65, updatedTime: '2024-09-01 06:30 PM' },
-        { id: 10, name: 'Garden', numProducts: 55, updatedTime: '2024-09-01 07:00 PM' },
-      ]
+      categories: [], // Empty array to be populated with categories from backend
     };
   },
   computed: {
     filteredCategories() {
       let filtered = this.categories;
 
-      // Apply search filter by name
+      // Apply search filter by categoryName
       if (this.searchQuery) {
-        filtered = filtered.filter(category => category.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+        filtered = filtered.filter(category => category.categoryName.toLowerCase().includes(this.searchQuery.toLowerCase()));
       }
 
       // Apply filter by number of products
       if (this.filterOperator !== "all" && this.filterValue) {
+        const filterValueParsed = parseInt(this.filterValue);
         if (this.filterOperator === "less") {
-          filtered = filtered.filter(category => category.numProducts < parseInt(this.filterValue));
+          filtered = filtered.filter(category => category.noOfProducts < filterValueParsed);
         } else if (this.filterOperator === "more") {
-          filtered = filtered.filter(category => category.numProducts > parseInt(this.filterValue));
+          filtered = filtered.filter(category => category.noOfProducts > filterValueParsed);
         } else if (this.filterOperator === "equal") {
-          filtered = filtered.filter(category => category.numProducts === parseInt(this.filterValue));
+          filtered = filtered.filter(category => category.noOfProducts === filterValueParsed);
         }
       }
 
@@ -172,6 +169,25 @@ export default {
     }
   },
   methods: {
+    async fetchCategories() {
+      try {
+        // Get the token from localStorage (you can also use sessionStorage if preferred)
+        const token = localStorage.getItem('authToken');
+        console.log(token);
+
+        // Set the Authorization header with the Bearer token
+        const response = await axios.get('http://localhost:5500/admin/categories', {
+          headers: {
+            'Authorization': `Bearer ${token}` // Include the Bearer token
+          }
+        });
+
+        this.categories = response.data; // Populate categories with data from backend
+        console.log(response);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    },
     showAddCategory() {
       this.showAddCategoryComponent = true; // Show the AddNewCategory component
     },
@@ -186,26 +202,74 @@ export default {
       });
       this.showAddCategoryComponent = false; // Hide the AddNewCategory component
     },
-    deleteCategory(categoryId) {
-      this.categories = this.categories.filter(category => category.id !== categoryId);
+    async deleteCategory(categoryID) {
+      try {
+        // Get the token from localStorage (or sessionStorage)
+        const token = localStorage.getItem('authToken');
+
+        // Make DELETE request to backend to delete the category
+        await axios.delete(`http://localhost:5500/admin/categories/${categoryID}`, {
+          headers: {
+            'Authorization': `Bearer ${token}` // Pass the token in the Authorization header
+          }
+        });
+
+        // If successful, remove the category from the local state
+        this.categories = this.categories.filter(category => category.categoryID !== categoryID);
+        console.log('Category deleted successfully');
+      } catch (error) {
+        console.error('Error deleting category:', error);
+      }
     },
     editCategory(category) {
-      this.editCategoryId = category.id; // Set the category ID being edited
-      this.editCategoryData = { ...category }; // Create a copy of the category data for editing
+      this.editCategoryId = category.categoryID; // Set the correct ID
+      this.editCategoryData = {
+        categoryName: category.categoryName,
+        noOfProducts: category.noOfProducts
+      }; // Create a copy of the category data for editing
     },
-    saveCategory(categoryId) {
-      const index = this.categories.findIndex(category => category.id === categoryId);
-      if (index !== -1) {
-        this.categories[index].name = this.editCategoryData.name;
-        this.categories[index].numProducts = this.editCategoryData.numProducts;
-        this.categories[index].updatedTime = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+    async saveCategory(categoryId) {
+      try {
+        // Get the token from localStorage
+        const token = localStorage.getItem('authToken');
+
+        // Prepare the updated category data
+        const updatedCategory = {
+          categoryName: this.editCategoryData.categoryName,
+          noOfProducts: this.editCategoryData.noOfProducts
+        };
+
+        // Send a PATCH request to update the category
+        const response = await axios.patch(`http://localhost:5500/admin/categories/${categoryId}`,
+          updatedCategory,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}` // Include the Bearer token in the request header
+            }
+          }
+        );
+
+        // If the update is successful, update the frontend category data
+        if (response.status === 200) {
+          const index = this.categories.findIndex(category => category.categoryID === categoryId);
+          if (index !== -1) {
+            this.categories[index].categoryName = this.editCategoryData.categoryName;
+            this.categories[index].noOfProducts = this.editCategoryData.noOfProducts;
+            this.categories[index].updatedTime = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+          }
+
+          // Reset the edit state
+          this.editCategoryId = null;
+          this.editCategoryData = {};
+          console.log('Category updated successfully:', response.data);
+        }
+      } catch (error) {
+        console.error('Error updating category:', error);
       }
-      this.editCategoryId = null; // Reset the edit state
-      this.editCategoryData = {};
     },
     cancelEdit() {
       this.editCategoryId = null; // Reset the edit state
-      this.editCategoryData = {};
+      this.editCategoryData = {}; // Reset the temporary data
     },
     generateReport(type) {
       const dataToExport = this.filteredCategories; // Use filtered data for export
@@ -218,9 +282,9 @@ export default {
     exportToCSV(filteredData) {
       const headers = ["ID", "Name", "Number of Products", "Updated Time"];
       const rows = filteredData.map(category => [
-        category.id,
-        category.name,
-        category.numProducts,
+        category.categoryID,
+        category.categoryName,
+        category.noOfProducts,
         category.updatedTime
       ]);
 
@@ -242,9 +306,9 @@ export default {
       doc.autoTable({
         head: [["ID", "Name", "Number of Products", "Updated Time"]],
         body: filteredData.map(category => [
-          category.id,
-          category.name,
-          category.numProducts,
+          category.categoryID,
+          category.categoryName,
+          category.noOfProducts,
           category.updatedTime
         ])
       });
@@ -256,6 +320,9 @@ export default {
       this.filterValue = "";
       this.filterDate = "";
     }
+  },
+  mounted() {
+    this.fetchCategories(); // Fetch categories when component is mounted
   },
 };
 </script>

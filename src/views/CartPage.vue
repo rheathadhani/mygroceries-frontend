@@ -1,17 +1,16 @@
 <template>
   <div id="page-wrap" class="container mt-2 bg-light p-4 rounded">
-    <h3 class="pt-1 pb-0 text-center">Shopping Cart</h3>
     <div class="card shadow-sm">
       <!-- Card Body for Product List and Total -->
-      <div class="card-body pt-2 ">
+      <div class="card-body pt-2">
         <ProductsList :products="cartItems" @updateQuantity="updateQuantity" @removeProduct="removeFromCart"></ProductsList>
 
         <!-- Total Price -->
-        <h3 id="total-price" class="text-end mt-4">Total: ${{ totalPrice }}</h3>
-        
+        <h3 id="total-price" class="text-end mt-4">Total: RM {{ totalPrice }}</h3>
+
         <!-- Checkout Button -->
         <router-link to="/checkout" id="checkout-link">
-          <button id="checkout-button" class="btn btn-dark w-100 mt-3">Proceed to Checkout</button>
+          <button id="checkout-button" class="btn btn-dark w-100 mt-3" @click="saveCartForCheckout">Proceed to Checkout</button>
         </router-link>
       </div>
     </div>
@@ -19,8 +18,8 @@
 </template>
 
 <script>
-import { cartItems } from '../fake-data';
 import ProductsList from "../components/ProductsList.vue";
+import axios from 'axios';
 
 export default {
   name: 'CartPage',
@@ -29,27 +28,90 @@ export default {
   },
   data() {
     return {
-      cartItems: cartItems.map(item => ({ ...item, quantity: 1 })), // Initialize with quantity
-    }
+      cartItems: [] // Start with an empty cart
+    };
   },
   computed: {
     totalPrice() {
       return this.cartItems.reduce(
-        (sum, item) => sum + Number(item.price) * item.quantity,
+        (sum, item) => sum + (parseFloat(item.productPrice) || 0) * (item.quantity || 1),
         0,
       );
     }
   },
   methods: {
-    updateQuantity(productId, newQuantity) {
-      const product = this.cartItems.find(item => item.id === productId);
-      if (product) {
-        product.quantity = newQuantity;
+    async fetchCartItems() {
+      try {
+        const token = localStorage.getItem('authToken'); // Get token from localStorage
+        const response = await axios.get('http://localhost:5500/cart', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        this.cartItems = response.data.map(item => ({
+          ...item,
+          productPrice: parseFloat(item.productPrice) || 0, // Ensure productPrice is a number
+          quantity: parseInt(item.quantity, 10) || 1 // Default quantity to 1 if not set
+        }));
+      } catch (error) {
+        console.log("Cart is empty...");
       }
     },
-    removeFromCart(productId) {
-      this.cartItems = this.cartItems.filter(item => item.id !== productId);
+
+    async removeFromCart(productName) {
+      const product = this.cartItems.find(item => item.productName === productName);
+
+      if (!product) return;
+
+      try {
+        const token = localStorage.getItem('authToken');
+        // Send DELETE request to remove the product by productName
+        await axios.delete('http://localhost:5500/cart', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          data: { productName: product.productName } // Send productName in the request body
+        });
+
+        // Remove the item from cartItems after successful deletion
+        this.cartItems = this.cartItems.filter(item => item.productName !== productName);
+      } catch (error) {
+        console.error('Failed to remove product from cart:', error);
+        alert('Failed to remove product from cart. Please try again.');
+      }
+    },
+
+    async updateQuantity(productName, newQuantity) {
+      const product = this.cartItems.find(item => item.productName === productName);
+      if (product) {
+        try {
+          const token = localStorage.getItem('authToken');
+          await axios.patch('http://localhost:5500/cart', {
+            productName,
+            quantity: newQuantity
+          }, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          product.quantity = newQuantity;
+        } catch (error) {
+          console.error('Failed to update quantity:', error);
+        }
+      }
+    },
+
+    saveCartForCheckout() {
+      // Save cart items to localStorage before navigating to checkout
+      localStorage.setItem('cartItems', JSON.stringify(this.cartItems));
     }
+  },
+
+  async mounted() {
+    await this.fetchCartItems(); // Fetch cart items when the page loads
   }
 };
 </script>

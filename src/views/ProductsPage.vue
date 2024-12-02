@@ -3,7 +3,6 @@
     <div class="row">
       <!-- Sidebar with Filter and Categories List -->
       <div class="col-md-3 bg-light p-3">
-        <FilterProduct @filterChanged="handleFilterChange" />
         <CategoriesList @categorySelected="filterProductsByCategory" />
       </div>
       <!-- Products Grid -->
@@ -15,60 +14,89 @@
 </template>
 
 <script>
-import { products } from "../fake-data";
+import axios from 'axios';
 import ProductsGrid from "../components/ProductsGrid.vue";
 import CategoriesList from '../components/CategoriesList.vue';
-import FilterProduct from '../components/FilterProduct.vue';
 
 export default {
   name: "ProductsPage",
   components: {
     ProductsGrid,
     CategoriesList,
-    FilterProduct
   },
   data() {
     return {
-      products,
-      filteredProducts: products, // Start with all products displayed
-      selectedPriceRange: [2, 50], // Default price range for the filter
+      filteredProducts: [],
+      allProducts: [], // Store all products initially
+      cartItems: [], // Store cart items here
+    };
+  },
+  watch: {
+    // Watch for changes in the route query (search term)
+    '$route.query.search'(newSearchTerm) {
+      this.filterProductsBySearch(newSearchTerm);
+    }
+  },
+  computed: {
+    cartQuantity() {
+      if (!this.cartItems || !Array.isArray(this.cartItems)) {
+        return 0;
+      }
+      const cartItem = this.cartItems.find(item => item.productID === this.product.productID);
+      return cartItem ? cartItem.quantity : 0;
     }
   },
   methods: {
-    filterProductsByCategory(categoryId) {
-      this.filteredProducts = this.products.filter(product => product.categoryId === categoryId);
+    async fetchProducts() {
+      // Fetch all products
+      try {
+        const response = await axios.get('http://localhost:5500/products');
+        this.allProducts = response.data;
+        this.filteredProducts = this.allProducts;
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
     },
-    handleFilterChange({ priceRange }) {
-      this.selectedPriceRange = priceRange;
-      this.applyFilters();
+    async fetchCartItems() {
+      try {
+        const token = localStorage.getItem('authToken'); // Get token from localStorage
+        const response = await axios.get('http://localhost:5500/cart', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        this.cartItems = response.data; // Store cart items
+      } catch (error) {
+        console.error('Failed to fetch cart items:', error);
+      }
     },
-    applyFilters() {
-      this.filteredProducts = this.products.filter(product => {
-        const inPriceRange = product.price >= this.selectedPriceRange[0] && product.price <= this.selectedPriceRange[1];
-        return inPriceRange;
-      });
+
+    filterProductsBySearch(searchTerm) {
+      if (searchTerm) {
+        // Filter products based on the search term
+        this.filteredProducts = this.allProducts.filter(product =>
+          product.productName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      } else {
+        // Show all products if no search term
+        this.filteredProducts = this.allProducts;
+      }
+    },
+    // Method to filter products by selected category
+    filterProductsByCategory(categoryID) {
+      this.filteredProducts = this.allProducts.filter(product => product.category === categoryID);
+      console.log(this.filteredProducts); // Check if the filtered products are correct
+    }
+
+  },
+  async mounted() {
+    await this.fetchProducts(); // Fetch products when the page loads
+    await this.fetchCartItems(); // Fetch cart items when the page loads
+
+    // Apply search filtering if there's a query in the URL
+    if (this.$route.query.search) {
+      this.filterProductsBySearch(this.$route.query.search);
     }
   }
-}
+};
 </script>
-
-<style scoped>
-#product-wrap {
-  min-height: 100vh;
-  padding-left: 10px; /* Ensure even padding on both sides */
-}
-
-#page-wrap-container {
-  height: 100vh;
-  padding-right: 20px; /* Ensure even padding on both sides */
-}
-
-.bg-light {
-  background-color: #f8f9fa !important;
-}
-
-/* Ensure consistent width for Filter and Categories List */
-.col-md-3 {
-  max-width: 100%; /* Adjust max-width to keep both components the same width */
-}
-</style>

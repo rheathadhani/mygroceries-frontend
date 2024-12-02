@@ -39,14 +39,18 @@
 
           <!-- Filters Row (Toggle Visibility) -->
           <div v-if="filterVisibility" class="row mb-3">
-            <div class="col-md-3">
+            <!-- Filter by Category -->
+            <div class="col-md-4">
               <label for="filterCategory">Filter by Category:</label>
               <select id="filterCategory" v-model="filterCategory" class="form-control">
                 <option value="">All</option>
-                <option v-for="category in categories" :key="category">{{ category }}</option>
+                <option v-for="category in categories" :key="category.id" :value="category.name">{{ category.name }}
+                </option>
               </select>
             </div>
-            <div class="col-md-3">
+
+            <!-- Filter by Price -->
+            <div class="col-md-4">
               <label for="filterPrice">Filter by Price:</label>
               <div class="input-group">
                 <select v-model="filterPriceCondition" class="form-select form-control">
@@ -57,11 +61,9 @@
                 <input type="number" v-model="filterPrice" class="form-control" placeholder="Price">
               </div>
             </div>
-            <div class="col-md-3">
-              <label for="filterDate">Filter by Created Date:</label>
-              <input type="date" v-model="filterDate" class="form-control">
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
+
+            <!-- Reset Filters Button -->
+            <div class="col-md-4 d-flex align-items-end">
               <button class="btn btn-secondary w-100" @click="resetFilters">
                 Reset Filters
               </button>
@@ -81,16 +83,17 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="product in filteredProducts" :key="product.id">
-                <td>{{ product.id }}</td>
-                <td>{{ product.name }}</td>
+              <tr v-for="product in filteredProducts" :key="product.productID">
+                <td>{{ product.productID }}</td>
+                <td>{{ product.productName }}</td>
                 <td>{{ product.price }}</td>
-                <td>{{ product.category }}</td>
+                <td>{{ product.categoryName }}</td>
                 <td>{{ formatDate(product.updatedDate) }}</td>
                 <td>
                   <button class="btn btn-sm btn-warning me-2" @click="viewDetails(product)">View Details</button>
                   <button class="btn btn-sm btn-primary me-2" @click="editProduct(product)">Edit</button>
-                  <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">Delete</button>
+                  <!-- Delete button added back -->
+                  <button class="btn btn-sm btn-danger" @click="deleteProduct(product.productID)">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -119,17 +122,19 @@
             </div>
             <div class="mb-3">
               <label for="newProductCategory" class="form-label">Category</label>
-              <select id="newProductCategory" v-model="newProduct.category" class="form-control" required>
-                <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+              <select id="newProductCategory" v-model="newProduct.categoryID" class="form-control" required>
+                <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}
+                </option>
               </select>
             </div>
             <div class="mb-3">
               <label for="newProductDescription" class="form-label">Description</label>
-              <textarea id="newProductDescription" v-model="newProduct.description" class="form-control" required></textarea>
+              <textarea id="newProductDescription" v-model="newProduct.description" class="form-control"
+                required></textarea>
             </div>
             <div class="mb-3">
-              <label for="newProductImage" class="form-label">Image</label>
-              <input type="file" id="newProductImage" @change="onNewImageChange" class="form-control" required>
+              <label for="newProductImage" class="form-label">Image URL</label>
+              <input type="text" id="newProductImage" v-model="newProduct.imageURL" class="form-control" required>
             </div>
             <button type="submit" class="btn btn-success me-2">Save</button>
             <button type="button" class="btn btn-secondary" @click="cancelAddNewProduct">Cancel</button>
@@ -148,6 +153,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import jsPDF from "jspdf"; // Import jsPDF for generating PDF files
 import "jspdf-autotable"; // Import AutoTable plugin for jsPDF
 import ProductEdit from './ProductEdit.vue'; // Import ProductEdit component
@@ -165,7 +171,6 @@ export default {
       filterCategory: "", // Filter for category
       filterPriceCondition: "eq", // Filter condition (lt, eq, gt)
       filterPrice: null, // Filter for price
-      filterDate: "", // Filter for created date
       filterVisibility: false, // Control the visibility of filters
       showDetails: false, // Control the visibility of the edit view
       showAllDetails: false, // Control the visibility of the details view
@@ -174,18 +179,14 @@ export default {
       newProduct: {
         name: "",
         price: null,
-        category: "",
+        categoryID: "",
         description: "",
-        image: null,
+        imageURL: null,
         createdDate: new Date().toISOString(),
         updatedDate: new Date().toISOString(),
       }, // Store data for new product
-      products: [
-        { id: 1, image: 'path/to/image1.jpg', name: 'Product 1', price: 100, category: 'Category A', description: 'Description for product 1', createdDate: '2024-09-01T19:00:00', updatedDate: '2024-09-02T15:00:00' },
-        { id: 2, image: 'path/to/image2.jpg', name: 'Product 2', price: 150, category: 'Category B', description: 'Description for product 2', createdDate: '2024-08-30T14:30:00', updatedDate: '2024-09-01T10:00:00' },
-        // More products...
-      ],
-      categories: ['Category A', 'Category B', 'Category C'], // Categories list
+      products: [],
+      categories: [], // Categories list
     };
   },
   computed: {
@@ -196,8 +197,8 @@ export default {
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
         filtered = filtered.filter(product =>
-          product.id.toString().includes(query) ||
-          product.name.toLowerCase().includes(query) ||
+          product.productID.toString().includes(query) ||
+          product.productName.toLowerCase().includes(query) ||
           product.price.toString().includes(query) ||
           product.description.toLowerCase().includes(query)
         );
@@ -205,29 +206,104 @@ export default {
 
       // Apply category filter
       if (this.filterCategory) {
-        filtered = filtered.filter(product => product.category === this.filterCategory);
+        filtered = filtered.filter(product => product.categoryName === this.filterCategory);
       }
 
       // Apply price filter
       if (this.filterPrice !== null) {
-        if (this.filterPriceCondition === "lt") {
-          filtered = filtered.filter(product => product.price < this.filterPrice);
-        } else if (this.filterPriceCondition === "eq") {
-          filtered = filtered.filter(product => product.price === this.filterPrice);
-        } else if (this.filterPriceCondition === "gt") {
-          filtered = filtered.filter(product => product.price > this.filterPrice);
-        }
-      }
-
-      // Apply created date filter
-      if (this.filterDate) {
-        filtered = filtered.filter(product => new Date(product.createdDate).toLocaleDateString() === new Date(this.filterDate).toLocaleDateString());
+        const priceFilterValue = Number(this.filterPrice);  // Convert filterPrice to a number
+        filtered = filtered.filter(product => {
+          const productPrice = Number(product.price);  // Convert product.price to a number
+          if (this.filterPriceCondition === "lt") {
+            return productPrice < priceFilterValue;
+          } else if (this.filterPriceCondition === "eq") {
+            return productPrice === priceFilterValue;  // Use strict equality with numbers
+          } else if (this.filterPriceCondition === "gt") {
+            return productPrice > priceFilterValue;
+          }
+        });
       }
 
       return filtered;
     }
   },
   methods: {
+    async fetchCategories() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get('http://localhost:5500/admin/categories', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        // Ensure to store both categoryID and categoryName
+        this.categories = response.data.map(category => ({
+          id: category.categoryID,
+          name: category.categoryName
+        }));
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    },
+    async fetchProducts() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get('http://localhost:5500/admin/products', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log(response);
+
+        this.products = response.data;  // Update products list with the response data
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        alert('Failed to fetch products. Please try again.');
+      }
+    },
+    async saveNewProduct() {
+      try {
+        const token = localStorage.getItem('authToken');
+
+        // Prepare the product data as JSON
+        const productData = {
+          name: this.newProduct.name,
+          price: this.newProduct.price,
+          categoryID: this.newProduct.categoryID,
+          description: this.newProduct.description,
+          imageURL: this.newProduct.imageURL,  // Send image URL instead of file
+        };
+
+        // Make the POST request to your backend
+        const response = await axios.post('http://localhost:5500/admin/products', productData, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',  // Send JSON data
+          },
+        });
+
+        // Handle the successful response
+        this.products.push(response.data.product);  // Assuming backend returns the new product
+        alert('Product added successfully!');
+
+        // Reset form fields after success
+        this.newProduct = {
+          name: "",
+          price: null,
+          categoryID: "",
+          description: "",
+          imageURL: null,
+          createdDate: new Date().toISOString(),
+          updatedDate: new Date().toISOString(),
+        };
+
+        this.showAddNew = false;  // Close the form
+      } catch (error) {
+        console.error('Failed to add product:', error);
+        alert('Failed to add product. Please try again.');
+      }
+    },
     toggleFilters() {
       this.filterVisibility = !this.filterVisibility; // Toggle filter row visibility
     },
@@ -235,34 +311,6 @@ export default {
       this.showAddNew = true; // Show the Add New Product form
       this.showDetails = false;
       this.showAllDetails = false;
-    },
-    saveNewProduct() {
-      // Generate a new product ID
-      const newId = this.products.length ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
-      this.newProduct.id = newId;
-      this.newProduct.updatedDate = new Date().toISOString();
-
-      // Add the new product to the list
-      this.products.push({ ...this.newProduct });
-
-      // Reset new product form
-      this.newProduct = {
-        name: "",
-        price: null,
-        category: "",
-        description: "",
-        image: null,
-        createdDate: new Date().toISOString(),
-        updatedDate: new Date().toISOString(),
-      };
-
-      this.showAddNew = false; // Go back to the table view
-    },
-    onNewImageChange(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.newProduct.image = URL.createObjectURL(file); // Update image preview for new product
-      }
     },
     cancelAddNewProduct() {
       this.showAddNew = false; // Go back to the table without adding a new product
@@ -278,25 +326,32 @@ export default {
       this.showDetails = false; // Ensure edit view is hidden
     },
     editProduct(product) {
-      this.selectedProduct = { ...product }; // Copy product data for editing
+      this.selectedProduct = { ...product, categoryID: product.categoryID }; // Copy product data for editing
       this.showDetails = true; // Show edit view
       this.showAllDetails = false; // Ensure details view is hidden
     },
-    saveProduct(updatedProduct) {
-      const index = this.products.findIndex(p => p.id === updatedProduct.id);
-      if (index !== -1) {
-        this.products.splice(index, 1, updatedProduct); // Replace the old product with the updated one
-        this.showDetails = false; // Hide edit view after saving
+    // Added back the delete product function
+    async deleteProduct(productId) {
+      const token = localStorage.getItem('authToken');
+      try {
+        await axios.delete(`http://localhost:5500/admin/products/${productId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        this.products = this.products.filter(product => product.productID !== productId);
+        alert('Product deleted successfully');
+      } catch (error) {
+        console.error('Failed to delete product:', error);
+        alert('Failed to delete product. Please try again.');
       }
-    },
-    deleteProduct(productId) {
-      this.products = this.products.filter(product => product.id !== productId);
     },
     resetFilters() {
       this.filterCategory = "";
       this.filterPriceCondition = "eq";
       this.filterPrice = null;
-      this.filterDate = "";
+      this.searchQuery = "";
     },
     generateReport(type) {
       const dataToExport = this.filteredProducts; // Use filtered data for export
@@ -307,20 +362,17 @@ export default {
       }
     },
     exportToCSV(filteredData) {
-      const headers = ["ID", "Name", "Price", "Category", "Description", "Created Date", "Updated Date"];
+      const headers = ["ID", "Name", "Price", "Category", "Description", "Updated Date"];
       const rows = filteredData.map(product => [
-        product.id,
-        product.name,
+        product.productID,
+        product.productName,
         product.price,
-        product.category,
+        product.categoryName,
         product.description,
-        this.formatDate(product.createdDate),
         this.formatDate(product.updatedDate)
       ]);
 
-      let csvContent = "data:text/csv;charset=utf-8,"
-        + headers.join(",") + "\n"
-        + rows.map(e => e.join(",")).join("\n");
+      let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
 
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -334,25 +386,29 @@ export default {
       const doc = new jsPDF();
       doc.text("Products Report", 20, 10);
       doc.autoTable({
-        head: [["ID", "Name", "Price", "Category", "Description", "Created Date", "Updated Date"]],
+        head: [["ID", "Name", "Price", "Category", "Description", "Updated Date"]],
         body: filteredData.map(product => [
-          product.id,
-          product.name,
+          product.productID,
+          product.productName,
           product.price,
-          product.category,
+          product.categoryName,
           product.description,
-          this.formatDate(product.createdDate),
           this.formatDate(product.updatedDate)
         ])
       });
       doc.save("products_report.pdf");
     },
     formatDate(date) {
-      return new Date(date).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+      return new Date(date).toLocaleString('en-US');
     }
   },
+  mounted() {
+    this.fetchProducts();
+    this.fetchCategories();
+  }
 };
 </script>
+
 
 <style scoped>
 .category {

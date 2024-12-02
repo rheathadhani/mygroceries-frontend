@@ -1,5 +1,5 @@
 <template>
-    <h1 class="mt-3 text-dark">404: Page Not Found</h1>
+    <h3 class="mt-3 text-dark">404: Page Not Found</h3>
 </template>
 
 <script>
@@ -9,7 +9,7 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-    text-align: center;
+h3 {
+    text-align: center !important;
 }
 </style>

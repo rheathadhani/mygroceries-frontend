@@ -1,7 +1,7 @@
 <template>
   <div class="container mt-4">
     <div class="profile-container p-4 shadow-sm">
-      <form class="profile-form" method="post">
+      <form class="profile-form" @submit.prevent="saveProfile">
 
         <div class="form-group row mb-3">
           <label for="username" class="col-sm-3 col-form-label">Username</label>
@@ -11,9 +11,16 @@
         </div>
 
         <div class="form-group row mb-3">
-          <label for="name" class="col-sm-3 col-form-label">Name</label>
+          <label for="firstName" class="col-sm-3 col-form-label">First Name</label>
           <div class="col-sm-9">
-            <input type="text" class="form-control" id="name" v-model="user.name">
+            <input type="text" class="form-control" id="firstName" v-model="user.firstName">
+          </div>
+        </div>
+
+        <div class="form-group row mb-3">
+          <label for="lastName" class="col-sm-3 col-form-label">Last Name</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="lastName" v-model="user.lastName">
           </div>
         </div>
 
@@ -27,7 +34,7 @@
         <div class="form-group row mb-3">
           <label for="phone" class="col-sm-3 col-form-label">Phone Number</label>
           <div class="col-sm-9">
-            <input type="tel" class="form-control" id="phone" v-model="user.phone">
+            <input type="tel" class="form-control" id="phone" v-model="user.phoneNumber">
           </div>
         </div>
 
@@ -35,22 +42,23 @@
           <label class="col-sm-3 col-form-label">Gender</label>
           <div class="col-sm-9 d-flex align-items-center">
             <div class="form-check form-check-inline">
-              <input type="radio" id="male" value="Male" v-model="user.gender" class="form-check-input">
+              <input type="radio" id="male" value="male" v-model="user.gender" class="form-check-input">
               <label for="male" class="form-check-label">Male</label>
             </div>
             <div class="form-check form-check-inline">
-              <input type="radio" id="female" value="Female" v-model="user.gender" class="form-check-input">
+              <input type="radio" id="female" value="female" v-model="user.gender" class="form-check-input">
               <label for="female" class="form-check-label">Female</label>
             </div>
             <div class="form-check form-check-inline">
-              <input type="radio" id="other" value="Other" v-model="user.gender" class="form-check-input">
+              <input type="radio" id="other" value="other" v-model="user.gender" class="form-check-input">
               <label for="other" class="form-check-label">Other</label>
             </div>
+
           </div>
         </div>
 
         <div class="form-group row mb-4">
-          <label for="dob" class="col-sm-3 col-form-label">Date of birth</label>
+          <label for="dob" class="col-sm-3 col-form-label">Date of Birth</label>
           <div class="col-sm-9">
             <input type="date" class="form-control" id="dob" v-model="user.dob">
           </div>
@@ -66,19 +74,86 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: "MyProfile",
   data() {
     return {
       user: {
         username: '',
-        name: 'Rhea',
+        firstName: '',
+        lastName: '',
         email: '',
-        phone: '',
+        phoneNumber: '',
         gender: '',
         dob: ''
       }
     }
+  },
+  methods: {
+    async fetchProfile() {
+      try {
+        const token = localStorage.getItem('authToken'); // Get the auth token
+
+        const response = await axios.get('http://localhost:5500/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        // Format the date manually to 'YYYY-MM-DD'
+        const formatDate = (dateString) => {
+          const date = new Date(dateString);
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Add leading zero to month
+          const day = date.getDate().toString().padStart(2, '0'); // Add leading zero to day
+          return `${year}-${month}-${day}`;
+        };
+
+        // Populate the user fields
+        const data = response.data;
+        this.user = {
+          username: data.username || '', // Handle cases where the field is missing
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: data.email || '',
+          phoneNumber: data.phoneNumber || '',
+          gender: data.gender || '',
+          dob: data.dateOfBirth ? formatDate(data.dateOfBirth) : '' // Format date to 'YYYY-MM-DD'
+        };
+
+        console.log('Profile loaded:', this.user);
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        alert('Failed to load profile. Please try again.');
+      }
+    },
+    async saveProfile() {
+      try {
+        console.log("Profile data before saving:", this.user); // Log profile data before saving
+
+        const token = localStorage.getItem('authToken'); // Get the auth token
+
+        // Send the PATCH request to update the profile
+        const response = await axios.patch('http://localhost:5500/profile', this.user, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log('Server response:', response); // Log server response
+        alert('Profile updated successfully!');
+      } catch (error) {
+        console.error('Failed to save profile:', error.response ? error.response.data : error.message); // Log error message and response
+        alert('Failed to save profile. Please try again.');
+      }
+    }
+
+  },
+  mounted() {
+    this.fetchProfile(); // Fetch the profile when the component is mounted
   }
 }
 </script>
@@ -87,12 +162,13 @@ export default {
 .profile-container {
   width: 100%;
   max-width: 70vw;
-  height: 70vh;
+  height: 75vh;
   margin: 20px auto;
   padding: 20px;
   background-color: #fff;
   overflow-x: hidden;
-  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 12px 40px 0 rgba(0, 0, 0, 0.2); /* Increased shadow for debugging */
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 12px 40px 0 rgba(0, 0, 0, 0.2);
+  /* Increased shadow for debugging */
 }
 
 h3 {
@@ -103,6 +179,7 @@ button {
   transition: background-color 0.3s, color 0.3s;
   cursor: pointer;
   border-radius: 4px;
+  margin-bottom: 0px;
 }
 
 button:hover {
